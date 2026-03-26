@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+:root {
+  --background: #121212;
+  --foreground: #ededed;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #121212; 
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #ffffff; /* White */
+  border-radius: 5px;
+  border: 2px solid #121212; /* Creates padding effect */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #e5e5e5; /* Light Gray */
+}
+
+/* Ensure pointer events are always active, even during scroll (Lenis fix) */
+.lenis.lenis-smooth body,
+.lenis.lenis-smooth button,
+.lenis.lenis-smooth a,
+.lenis.lenis-smooth div,
+.lenis.lenis-smooth span,
+.lenis.lenis-smooth [role="button"],
+.lenis.lenis-smooth .cursor-pointer {
+  pointer-events: auto !important;
+}
+
+/* Optional: Only disable pointer events on iframes during scroll for performance */
+.lenis.lenis-smooth iframe {
+  pointer-events: none !important;
+}
