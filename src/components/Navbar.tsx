@@ -39,11 +39,15 @@ export default function Navbar() {
         } px-6 md:px-12 flex items-center justify-between pointer-events-none`}
       >
         <div className="flex-1 pointer-events-auto">
-          <Link href="/" className="flex items-center gap-2 group w-fit">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-orange-400 flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(236,72,153,0.5)]">
-              M
+          <Link href="/" className="flex items-center gap-2.5 group w-fit">
+            <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/10 group-hover:border-pink-500/50 group-hover:scale-110 transition-all duration-500 shadow-[0_0_15px_rgba(236,72,153,0.3)]">
+              <img 
+                src="/logo.png" 
+                alt="Logo" 
+                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
+              />
             </div>
-            <span className="text-xl font-bold tracking-tighter text-white group-hover:text-pink-400 transition-colors hidden sm:block">
+            <span className="text-xl font-black tracking-tighter text-white group-hover:text-pink-400 transition-colors hidden sm:block">
               MUNNA
             </span>
           </Link>

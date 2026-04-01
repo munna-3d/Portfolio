@@ -26,12 +26,12 @@ export const softwareTools: SoftwareTool[] = [
       />
     ),
   },
-  {
-    name: "Substance Painter", // Alias for matching
+    {
+    name: "Marmoset Toolbag",
     icon: (
       <img
-        src="https://cdn.worldvectorlogo.com/logos/substance-3d-painter-1.svg"
-        alt="Substance Painter"
+        src="https://i.gyazo.com/83dced8f7fe0b22c1e3ff304f8bec747.png"
+        alt="Marmoset Toolbag"
         className="w-10 h-10 object-contain"
       />
     ),
@@ -46,7 +46,7 @@ export const softwareTools: SoftwareTool[] = [
       />
     ),
   },
-  {
+  /*{
     name: "Premiere Pro",
     icon: (
       <img
@@ -55,7 +55,7 @@ export const softwareTools: SoftwareTool[] = [
         className="w-10 h-10 object-contain"
       />
     ),
-  },
+  },*/
   {
     name: "Unity",
     icon: (
@@ -77,16 +77,6 @@ export const softwareTools: SoftwareTool[] = [
     ),
   },
   {
-    name: "Marmoset Toolbag",
-    icon: (
-      <img
-        src="https://i.gyazo.com/83dced8f7fe0b22c1e3ff304f8bec747.png"
-        alt="Marmoset Toolbag"
-        className="w-10 h-10 object-contain"
-      />
-    ),
-  },
-  {
     name: "Maya",
     icon: (
         <img 
@@ -96,7 +86,7 @@ export const softwareTools: SoftwareTool[] = [
         />
     )
   },
-  {
+  /*{
     name: "ZBrush",
     icon: (
         <img 
@@ -105,7 +95,7 @@ export const softwareTools: SoftwareTool[] = [
             className="w-8 h-8 object-contain mix-blend-screen"
         />
     )
-  }
+  }*/
 ];
 
 export const getSoftwareByName = (name: string) => {

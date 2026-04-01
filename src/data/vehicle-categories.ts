@@ -73,13 +73,13 @@ export const vehicleCategories: VehicleCategory[] = [
   {
     slug: "bikes",
     title: "Bikes",
-    image: "/categories/bikes.png",
+    image: "/projects/bikes_hero.png",
     description: "Sleek two-wheeled electric superbikes with neon aesthetics.",
     about: "Compact design and intricate mechanical exposure. I focused on making every bolt and wire feel functional while maintaining a futuristic, high-end electric bike silhouette.",
     software: ["Blender", "Substance Painter", "Photoshop"],
     deliverables: ["High-Fidelity Superbike", "Neon Glow Material Set", "High Poly Scans", "Promotional Renders"],
     gallery: [
-      "/categories/bikes.png",
+      "/projects/bikes_hero.png",
       "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1200",
       "https://images.unsplash.com/photo-1484176810451-05500d99c4aa?auto=format&fit=crop&q=80&w=1200"
     ]

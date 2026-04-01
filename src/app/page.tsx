@@ -103,7 +103,7 @@ export default function Home() {
           title: "Hard Surface Asset",
           description: "Game-ready weapon asset created with a focus on functional realism and optimized geometry. Featuring PBR materials for modern engine integration.",
           images: hardSurfaceAssetImages,
-          tech: "Maya • ZBrush • Substance Painter"
+          tech: "Maya • ZBrush • Substance 3D Painter"
         };
       case "Environment Design":
         return {

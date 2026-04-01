@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLenis } from "lenis/react";
 import { ArrowLeft, Box, X, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
 import { vehicleCategories } from "@/data/vehicle-categories";
 import { getSoftwareByName } from "@/data/software";
@@ -18,6 +19,7 @@ export default function CategoryDetailPage() {
   const params = useParams();
   const categorySlug = params?.category as string;
   const category = vehicleCategories.find((c) => c.slug === categorySlug);
+  const lenis = useLenis();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const nextImage = useCallback(() => {
@@ -44,8 +46,12 @@ export default function CategoryDetailPage() {
   }, [selectedIndex, nextImage, prevImage]);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [categorySlug]);
+    if (lenis) {
+      lenis.scrollTo(0, { immediate: true });
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [lenis, categorySlug]);
 
   if (!category) {
     return (
@@ -167,51 +173,59 @@ export default function CategoryDetailPage() {
       </section>
 
       {/* 3. Detailed Information Section */}
-      <div className="max-w-[1800px] mx-auto px-6 lg:px-12 py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
-          
-          <div className="lg:col-span-5 space-y-16">
-            <motion.div variants={fadeInUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-500 mb-8 border-b border-white/5 pb-4">Software Used</h2>
-              <div className="flex flex-wrap gap-4">
-                {category.software.map((techName) => {
-                  const tool = getSoftwareByName(techName);
-                  return (
-                    <div key={techName} className="flex items-center gap-3 px-5 py-3 rounded-2xl border border-white/10 bg-white/5 hover:border-pink-500/30 transition-colors">
-                      <div className="w-5 h-5 flex items-center justify-center">{tool.icon}</div>
-                      <span className="text-gray-300 font-medium text-sm">{tool.name}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </motion.div>
+      <section className="max-w-[1800px] mx-auto px-6 lg:px-12 pb-32">
+        <div className="space-y-32">
+          {/* Main Content Section */}
+          <motion.div 
+            variants={fadeInUp} 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true }}
+            className="max-w-5xl"
+          >
+            <h2 className="text-sm font-bold uppercase tracking-[0.3em] text-pink-500 mb-8 flex items-center gap-4">
+              <span className="h-px w-8 bg-pink-500" />
+              About Project
+            </h2>
+            <p className="text-gray-200 leading-relaxed text-lg md:text-2xl font-light tracking-tight max-w-4xl">
+              {category.about}
+            </p>
+          </motion.div>
 
-            <motion.div variants={fadeInUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-500 mb-8 border-b border-white/5 pb-4">About Project</h2>
-              <p className="text-gray-300 leading-relaxed text-lg font-light">{category.about}</p>
-            </motion.div>
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 pt-16 border-t border-white/5">
+            <div className="lg:col-span-5 space-y-16">
+              <motion.div variants={fadeInUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-500 mb-8 border-b border-white/5 pb-4">Software Used</h2>
+                <div className="flex flex-wrap gap-4">
+                  {category.software.map((techName) => {
+                    const tool = getSoftwareByName(techName);
+                    return (
+                      <div key={techName} className="flex items-center gap-3 px-5 py-3 rounded-2xl border border-white/10 bg-white/5 hover:border-pink-500/30 transition-colors">
+                        <div className="w-5 h-5 flex items-center justify-center">{tool.icon}</div>
+                        <span className="text-gray-300 font-medium text-sm">{tool.name}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            </div>
 
-          <div className="lg:col-span-7 space-y-16">
-            <motion.div variants={fadeInUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-500 mb-8 border-b border-white/5 pb-4">Production Deliverables</h2>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {category.deliverables.map((item) => (
-                  <li key={item} className="flex items-center gap-4 text-gray-400 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-pink-500/20 transition-all">
-                    <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
-                    <span className="text-sm font-medium">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-            
-            <div className="pt-12 text-center text-gray-600 border-t border-white/5">
-                <Box className="w-10 h-10 mx-auto mb-4 opacity-50" />
-                <p className="text-xs tracking-widest uppercase">Visual refinement & technical documentation below</p>
+            <div className="lg:col-span-7">
+              <motion.div variants={fadeInUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-500 mb-8 border-b border-white/5 pb-4">Production Deliverables</h2>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {category.deliverables.map((item) => (
+                    <li key={item} className="flex items-center gap-4 text-gray-400 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-pink-500/20 transition-all">
+                      <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
+                      <span className="text-sm font-medium">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Full Screen Image Modal with Immersive Navigation */}
       <AnimatePresence>

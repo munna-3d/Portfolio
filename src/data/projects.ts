@@ -3,37 +3,45 @@ export const projects = [
     slug: "vehicle-art",
     title: "Vehicle Art",
     category: "Automotive Visualization",
-    image: "https://cdna.artstation.com/p/assets/images/images/079/513/986/large/moon-3d-untitled.jpg?1725111867",
-    description: "A high-fidelity automotive visualization featuring studio lighting, realistic materials, and dynamic environments. This project showcases advanced techniques in hard-surface modeling and PBR texturing to achieve photorealism.",
+    image: "/projects/vehicle_art_hero.png",
+    description: "A high-fidelity automotive visualization featuring studio lighting, realistic materials, and dynamic environments.",
+    about: "This project showcases advanced techniques in hard-surface modeling and PBR texturing to achieve photorealism. I focused on studio lighting, realistic materials, and creating a cohesive dynamic environment that highlights the vehicle's form.",
     tech: ["Blender", "Substance 3D Painter", "Photoshop"],
+    deliverables: ["High-Poly Sub-D Mesh", "Studio Lighting Scene", "4K PBR Texture Set", "Realistic Paint Shaders"],
     gallery: [
-      "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1595590424283-b8f17842773f?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80&w=1200"
+      "/projects/vehicle_art_hero.png",
+      "/projects/vehicle_art_detail_1.png",
+      "/projects/vehicle_art_detail_2.png"
     ]
   },
   {
     slug: "hard-surface-asset",
-    title: "Hard Surface Asset",
+    title: "Hard-Surface Asset",
     category: "Hard-Surface Modeling",
-    image: "https://images.unsplash.com/photo-1595590424283-b8f17842773f?auto=format&fit=crop&q=80&w=800",
-    description: "A game-ready weapon asset created with a focus on functional realism and optimized geometry. Featuring PBR materials for modern engine integration.",
-    tech: ["Maya", "ZBrush", "Substance Painter"],
+    image: "/projects/hard_surface_hero.png",
+    description: "A game-ready prop asset created with a focus on functional realism and optimized geometry.",
+    about: "This project showcases functional realism for game engines. I focused on optimized geometry, efficient UV packing, and high-fidelity PBR materials that provide a realistic look while maintaining performance. The focus was on mechanical complexity and material wear.",
+    tech: ["Blender", "Maya", "Marmoset Toolbag", "Substance 3D Painter", "Photoshop"],
+    deliverables: ["Game-Ready Low Poly Asset", "4K PBR Texture Set", "High-to-Low Poly Baking", "UE / Unity Package"],
     gallery: [
-      "https://images.unsplash.com/photo-1595590424283-b8f17842773f?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=1200"
+      "/projects/hard_surface_hero.png",
+      "/projects/hard_surface_detail_1.png",
+      "/projects/hard_surface_detail_2.png"
     ]
   },
   {
     slug: "environment-design",
     title: "Environment Design",
     category: "Game Asset Creation",
-    image: "https://images.unsplash.com/photo-1614728263952-84ea256f9679?auto=format&fit=crop&q=80&w=800",
-    description: "Immersive futuristic environment design utilizing modular workflows, trim sheets, and advanced lighting to create atmospheric game levels.",
-    tech: ["Unreal Engine", "Blender", "Photoshop"],
+    image: "/projects/environment_design_hero.png",
+    description: "Immersive futuristic environment design utilizing modular workflows and trim sheets.",
+    about: "A study in modularity and atmospheric lighting. I utilized trim sheets and modular architecture kits to create a cohesive environment. The lighting was carefully crafted to enhance the sci-fi mood while showcasing the material qualities.",
+    tech: ["Unreal Engine", "unity", "Blender", "Photoshop"],
+    deliverables: ["Modular Environment Kit", "Custom Trim Sheets", "Atmospheric Lighting Setup", "Optimized Game Scene"],
     gallery: [
-      "https://images.unsplash.com/photo-1614728263952-84ea256f9679?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=1200"
+      "/projects/environment_design_hero.png",
+      "/projects/environment_design_detail_1.png",
+      "/projects/environment_design_detail_2.png"
     ]
   }
 ];
