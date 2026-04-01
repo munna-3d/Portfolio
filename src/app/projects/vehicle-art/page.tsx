@@ -5,8 +5,8 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { vehicleCategories } from "@/data/vehicle-categories";
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
+import Footer from "@/components/layout/Footer";
+import Navbar from "@/components/layout/Navbar";
 
 const cardSlideIn = {
   hidden: { opacity: 0, x: -20, y: 10 },

@@ -1,9 +1,5 @@
 import React from "react";
-
-export interface SoftwareTool {
-  name: string;
-  icon: React.ReactNode;
-}
+import { SoftwareTool } from "@/types";
 
 export const softwareTools: SoftwareTool[] = [
   {
@@ -21,7 +17,7 @@ export const softwareTools: SoftwareTool[] = [
     icon: (
       <img
         src="https://cdn.worldvectorlogo.com/logos/substance-3d-painter-1.svg"
-        alt="Substance 3D Painter"
+        alt="Substance Painter"
         className="w-10 h-10 object-contain"
       />
     ),

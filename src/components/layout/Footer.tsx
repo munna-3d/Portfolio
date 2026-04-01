@@ -84,7 +84,7 @@ export default function Footer() {
                                 <span className="font-medium">LINKEDIN</span>
                             </a>
                             <a href="https://www.fiverr.com/munna4020/3d-model-cars-and-trucks-using-blender-for-3d-modeling-and-rendering?ref_ctx_id=83c3092200974c52809296361b57d6fa&pckg_id=1&source=seller_page" target="_blank" className="flex items-center gap-3 text-gray-500 hover:text-white transition-colors group">
-                                <Facebook className="w-5 h-5 group-hover:text-blue-600" />
+                                <Facebook className="w-5 h-5 group-hover:text-green-600" />
                                 <span className="font-medium">FIVERR</span>
                             </a>
                             <a href="https://www.youtube.com/@moon3d" target="_blank" className="flex items-center gap-3 text-gray-500 hover:text-white transition-colors group">

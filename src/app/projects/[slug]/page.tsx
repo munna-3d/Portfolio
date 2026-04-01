@@ -8,8 +8,8 @@ import { useLenis } from "lenis/react";
 import { ArrowLeft, Box, X, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
 import { projects } from "@/data/projects";
 import { getSoftwareByName } from "@/data/software";
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
+import Footer from "@/components/layout/Footer";
+import Navbar from "@/components/layout/Navbar";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -102,7 +102,7 @@ export default function ProjectPage() {
             
             <div className="space-y-0 mb-12">
               <h2 className="text-4xl md:text-6xl font-light tracking-[-0.05em] text-white/60 leading-none">REALISTIC 3D</h2>
-              <h1 className="text-7xl md:text-9xl font-black mb-0 tracking-[-0.08em] uppercase leading-[0.85] italic">
+              <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black mb-0 tracking-[-0.08em] uppercase leading-[0.85] italic">
                 {project.title.split(' ')[0]} <span className="text-pink-500 font-outline text-transparent" style={{ WebkitTextStroke: '1px rgba(236, 72, 153, 0.5)' }}>{project.title.split(' ')[1] || 'Asset'}</span>
               </h1>
             </div>

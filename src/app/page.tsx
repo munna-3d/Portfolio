@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import ScrollyCanvas from "@/components/ScrollyCanvas";
-import Projects from "@/components/Projects";
-import Productions from "@/components/Productions";
-import Experience from "@/components/Experience";
-import Popup from "@/components/Popup";
+import ScrollyCanvas from "@/components/features/ScrollyCanvas";
+import Projects from "@/components/features/Projects";
+import Productions from "@/components/features/Productions";
+import Experience from "@/components/features/Experience";
+import Popup from "@/components/ui/Popup";
 import {
   Box,
   Layers,

@@ -42,7 +42,7 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-2.5 group w-fit">
             <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/10 group-hover:border-pink-500/50 group-hover:scale-110 transition-all duration-500 shadow-[0_0_15px_rgba(236,72,153,0.3)]">
               <img 
-                src="/logo.png" 
+                src="/images/logo.png" 
                 alt="Logo" 
                 className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
               />

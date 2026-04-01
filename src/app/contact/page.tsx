@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, CheckCircle2, Loader2, XCircle } from "lucide-react";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/layout/Navbar";
 
 export default function ContactPage() {
     const [selectedCategory, setSelectedCategory] = useState("Freelance Work");

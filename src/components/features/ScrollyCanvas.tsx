@@ -2,7 +2,7 @@
 
 import { useScroll, useTransform, useMotionValueEvent, motion, useSpring } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
-import Overlay from "./Overlay";
+import Overlay from "../layout/Overlay";
 
 const FRAME_COUNT = 19;
 

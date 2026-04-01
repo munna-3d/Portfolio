@@ -8,7 +8,7 @@ import { useLenis } from "lenis/react";
 import { ArrowLeft, Box, X, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
 import { vehicleCategories } from "@/data/vehicle-categories";
 import { getSoftwareByName } from "@/data/software";
-import Footer from "@/components/Footer";
+import Footer from "@/components/layout/Footer";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -97,7 +97,7 @@ export default function CategoryDetailPage() {
             
             <div className="space-y-0 mb-12">
               <h2 className="text-4xl md:text-6xl font-light tracking-[-0.05em] text-white/60 leading-none">REALISTIC 3D</h2>
-              <h1 className="text-7xl md:text-9xl font-black mb-0 tracking-[-0.08em] uppercase leading-[0.85] italic">
+              <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black mb-0 tracking-[-0.08em] uppercase leading-[0.85] italic">
                 {category.title.split(' ')[0]} <span className="text-pink-500 font-outline text-transparent" style={{ WebkitTextStroke: '1px rgba(236, 72, 153, 0.5)' }}>{category.title.split(' ')[1] || 'Design'}</span>
               </h1>
             </div>

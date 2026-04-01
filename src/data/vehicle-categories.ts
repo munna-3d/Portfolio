@@ -1,14 +1,4 @@
-export interface VehicleCategory {
-  slug: string;
-  title: string;
-  image: string;
-  description: string;
-  about: string;
-  software: string[];
-  deliverables: string[];
-  gallery: string[];
-}
-
+import { VehicleCategory } from "@/types";
 export const vehicleCategories: VehicleCategory[] = [
   {
     slug: "sports-cars",
