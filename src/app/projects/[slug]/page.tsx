@@ -261,14 +261,14 @@ export default function ProjectPage() {
             {/* Navigation Arrows */}
             <button 
               onClick={(e) => { e.stopPropagation(); prevImage(); }}
-              className="absolute left-6 md:left-12 p-6 bg-black/40 hover:bg-pink-500/20 rounded-full transition-all border border-white/10 hover:border-pink-500/50 z-[110] group backdrop-blur-sm"
+              className="absolute left-6 md:left-12 p-6 bg-black/40 hover:bg-pink-500/20 rounded-full transition-all border border-white/10 hover:border-pink-500/50 z-[110] group backdrop-blur-sm hidden md:flex items-center justify-center"
             >
               <ChevronLeft className="w-12 h-12 text-white group-hover:scale-110 transition-transform" />
             </button>
 
             <button 
               onClick={(e) => { e.stopPropagation(); nextImage(); }}
-              className="absolute right-6 md:right-12 p-6 bg-black/40 hover:bg-pink-500/20 rounded-full transition-all border border-white/10 hover:border-pink-500/50 z-[110] group backdrop-blur-sm"
+              className="absolute right-6 md:right-12 p-6 bg-black/40 hover:bg-pink-500/20 rounded-full transition-all border border-white/10 hover:border-pink-500/50 z-[110] group backdrop-blur-sm hidden md:flex items-center justify-center"
             >
               <ChevronRight className="w-12 h-12 text-white group-hover:scale-110 transition-transform" />
             </button>
@@ -282,10 +282,22 @@ export default function ProjectPage() {
 
             <motion.div 
                key={selectedIndex}
-               className="relative w-[85vw] h-[80vh] md:w-[90vw] md:h-[85vh] flex items-center justify-center z-[102] pointer-events-none"
-               initial={{ opacity: 0, scale: 0.8 }}
-               animate={{ opacity: 1, scale: 1 }}
-               exit={{ opacity: 0, scale: 0.8 }}
+               className="relative w-[85vw] h-[80vh] md:w-[90vw] md:h-[85vh] flex items-center justify-center z-[102] pointer-events-auto cursor-grab active:cursor-grabbing"
+               initial={{ opacity: 0, x: 100, scale: 0.8 }}
+               animate={{ opacity: 1, x: 0, scale: 1 }}
+               exit={{ opacity: 0, x: -100, scale: 0.8 }}
+               drag="x"
+               dragConstraints={{ left: 0, right: 0 }}
+               dragElastic={0.7}
+               onDragEnd={(e, { offset, velocity }) => {
+                 const swipe = offset.x;
+                 const threshold = 100;
+                 if (swipe < -threshold) {
+                   nextImage();
+                 } else if (swipe > threshold) {
+                   prevImage();
+                 }
+               }}
                transition={{ type: "spring", damping: 25, stiffness: 120 }}
             >
               <img 
