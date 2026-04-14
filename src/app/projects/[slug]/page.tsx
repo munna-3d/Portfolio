@@ -103,7 +103,7 @@ export default function ProjectPage() {
             <div className="space-y-0 mb-12">
               <h2 className="text-4xl md:text-6xl font-light tracking-[-0.05em] text-white/60 leading-none">REALISTIC 3D</h2>
               <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black mb-0 tracking-[-0.08em] uppercase leading-[0.85] italic">
-                {project.title.split(' ')[0]} <span className="text-pink-500 font-outline text-transparent" style={{ WebkitTextStroke: '1px rgba(236, 72, 153, 0.5)' }}>{project.title.split(' ')[1] || 'Asset'}</span>
+                {project.title.split(' ')[0]} <span className="text-pink-500 font-outline text-transparent" style={{ WebkitTextStroke: '1px rgba(236, 72, 153, 0.5)' }}>{project.title.split(' ').slice(1).join(' ') || 'Asset'}</span>
               </h1>
             </div>
 
