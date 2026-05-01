@@ -34,7 +34,7 @@ export const vehicleCategories: VehicleCategory[] = [
   },
   {
     slug: "sci-fi",
-    title: "Sci-Fi Vehicles",
+    title: "Cyber/Sci-Fi Vehicle",
     image: "https://cdnb.artstation.com/p/assets/images/images/053/479/787/large/moon-3d-0044.jpg?1662318231",
     description: "Futuristic concepts and hovering scout ships from the year 3000.",
     about: "Experimental designs focusing on unconventional propulsion systems and paneling. I used heavy kitbashing techniques and custom trim sheets to achieve a high level of technical detail.",

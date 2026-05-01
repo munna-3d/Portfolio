@@ -6,6 +6,7 @@ import Projects from "@/components/features/Projects";
 import Productions from "@/components/features/Productions";
 import Experience from "@/components/features/Experience";
 import Popup from "@/components/ui/Popup";
+import Navbar from "@/components/layout/Navbar";
 import {
   Box,
   Layers,
@@ -126,6 +127,7 @@ export default function Home() {
 
   return (
     <main className="bg-[#121212] min-h-screen relative">
+      <Navbar />
       <ScrollyCanvas />
 
       {/* Expertise & Skills Section */}
@@ -147,14 +149,15 @@ export default function Home() {
                 <motion.div
                   key={item.name}
                   variants={fadeInUp}
-                  className="group relative flex items-center gap-4 p-4 rounded-xl overflow-hidden transition-all duration-300"
+                  className="group relative flex items-center gap-4 p-4 rounded-xl overflow-hidden transition-transform transition-shadow transition-colors duration-300 will-change-[transform,opacity] transform-gpu"
+                  style={{ transform: 'translateZ(0)' }}
                 >
                   {/* Glowing Border Background - Always Visible & Rotating - Cyan/Blue Tone */}
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-emerald-500 blur-md animate-spin-slow opacity-70" />
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-emerald-500 blur-lg opacity-40" />
 
                   {/* Glass Background & Border */}
-                  <div className="absolute inset-[1px] rounded-xl bg-[#1a1a1a]/90 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),inset_0_-1px_0_0_rgba(0,0,0,0.3)] transition-all duration-150 group-hover:bg-[#1a1a1a]/80 group-hover:border-white/20" />
+                  <div className="absolute inset-[1px] rounded-xl bg-[#1a1a1a]/95 border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),inset_0_-1px_0_0_rgba(0,0,0,0.3)] transition-colors transition-border-color duration-150 group-hover:bg-[#1a1a1a]/85 group-hover:border-white/20" />
 
                   {/* Glossy Reflection (Top) */}
                   <div className="absolute inset-x-4 top-[1px] h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
@@ -187,7 +190,8 @@ export default function Home() {
                 <motion.div
                   key={tool.name}
                   variants={fadeInUp}
-                  className="group relative flex items-center gap-3 px-6 py-4 rounded-full overflow-hidden transition-all duration-150 hover:-translate-y-1"
+                  className="group relative flex items-center gap-3 px-6 py-4 rounded-full overflow-hidden transition-transform transition-colors duration-150 hover:-translate-y-1 will-change-[transform,opacity] transform-gpu"
+                  style={{ transform: 'translateZ(0)' }}
                 >
                   {/* Glowing Border Background */}
                   {/* Glowing Border Background - Always Visible & Rotating */}
@@ -195,7 +199,7 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 blur-lg opacity-40" />
 
                   {/* Glass Background & Border (Overlaying the glow) */}
-                  <div className="absolute inset-[1px] rounded-full bg-[#1a1a1a]/90 backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),inset_0_-1px_0_0_rgba(0,0,0,0.3)] transition-all duration-150 group-hover:bg-[#1a1a1a]/80 group-hover:border-white/20" />
+                  <div className="absolute inset-[1px] rounded-full bg-[#1a1a1a]/95 border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),inset_0_-1px_0_0_rgba(0,0,0,0.3)] transition-colors transition-border-color duration-150 group-hover:bg-[#1a1a1a]/85 group-hover:border-white/20" />
 
                   {/* Glossy Reflection (Top) */}
                   <div className="absolute inset-x-4 top-[1px] h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

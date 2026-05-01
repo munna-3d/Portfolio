@@ -30,7 +30,8 @@ export default function Projects({ onPopup }: ProjectsProps) {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
                                 viewport={{ once: true }}
-                                className="group relative h-[400px] w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md transition-colors hover:bg-white/10 cursor-pointer"
+                                className="group relative h-[400px] w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-colors duration-300 hover:bg-white/10 cursor-pointer transform-gpu will-change-[transform,opacity]"
+                                style={{ transform: 'translateZ(0)' }}
                             >
                                 {/* Special Border Animation based on slug */}
                                 {project.slug === "vehicle-art" && (

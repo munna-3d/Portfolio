@@ -16,7 +16,7 @@ const fadeInUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
 };
 
-export default function ProjectPage() {
+const ProjectPage = () => {
   const params = useParams();
   const slug = params?.slug as string;
   const project = projects.find((p) => p.slug === slug);
@@ -73,17 +73,25 @@ export default function ProjectPage() {
       
       {/* 1. Large Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] ease-linear scale-110"
+        <motion.div 
+          initial={{ scale: 1 }}
+          animate={{ scale: 1.1 }}
+          transition={{ 
+            duration: 20, 
+            ease: "linear", 
+            repeat: Infinity, 
+            repeatType: "reverse" 
+          }}
+          className="absolute inset-0 bg-cover bg-center will-change-transform"
           style={{ backgroundImage: `url(${project.image})` }}
         >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm shadow-[inset_0_0_200px_rgba(0,0,0,0.8)]" />
-        </div>
+          <div className="absolute inset-0 bg-black/60 shadow-[inset_0_0_200px_rgba(0,0,0,0.8)]" />
+        </motion.div>
         
         <div className="relative z-10 max-w-[1800px] mx-auto px-6 lg:px-12 w-full pt-20">
           <Link 
             href="/"
-            className="inline-flex items-center gap-3 text-pink-500 hover:text-white transition-all mb-12 group bg-black/40 px-6 py-3 rounded-full border border-pink-500/20 backdrop-blur-sm"
+            className="inline-flex items-center gap-3 text-pink-500 hover:text-white transition-opacity transition-transform mb-12 group bg-black/40 px-6 py-3 rounded-full border border-pink-500/20"
           >
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             <span className="font-semibold tracking-wide uppercase text-sm">Back to Home</span>
@@ -127,7 +135,7 @@ export default function ProjectPage() {
                 </div>
                 <h3 className="text-3xl md:text-5xl font-black tracking-tight uppercase italic">Interactive Gallery</h3>
              </div>
-             <div className="flex items-center gap-2.5 text-[9px] text-gray-500 uppercase tracking-[0.2em] bg-white/5 border border-white/10 px-5 py-3 rounded-full backdrop-blur-md hover:bg-white/10 transition-all cursor-default">
+             <div className="flex items-center gap-2.5 text-[9px] text-gray-500 uppercase tracking-[0.2em] bg-white/5 border border-white/10 px-5 py-3 rounded-full hover:bg-white/10 transition-colors cursor-default">
                 <div className="w-1 h-1 rounded-full bg-pink-500" />
                 Select any visual for technical focus
              </div>
@@ -146,27 +154,28 @@ export default function ProjectPage() {
                   viewport={{ once: true, margin: "-100px" }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
                   onClick={() => setSelectedIndex(index)}
-                  className={`relative group cursor-pointer overflow-hidden rounded-[2.5rem] border border-white/5 bg-white/5 shadow-2xl transition-all duration-500 hover:border-pink-500/30 ${
+                  className={`relative group cursor-pointer overflow-hidden rounded-[2.5rem] border border-white/5 bg-white/5 shadow-2xl transition-transform transition-shadow transition-colors duration-500 hover:border-pink-500/30 will-change-[transform,opacity] transform-gpu ${
                     isFull ? "md:col-span-2 aspect-[21/10]" : "md:col-span-1 aspect-[16/11]"
                   }`}
+                  style={{ transform: 'translateZ(0)' }}
                 >
                   <img 
                     src={img} 
                     alt={`${project.title} production ${index + 1}`}
-                    className="w-full h-full object-cover opacity-100 group-hover:scale-105 transition-all duration-1000 ease-out" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out will-change-transform" 
                   />
                   
                   {/* Premium Hover Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent opacity-60 group-hover:opacity-90 transition-all duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-700" />
                   
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-24 h-24 rounded-full bg-pink-500/10 backdrop-blur-3xl border border-pink-500/40 opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-700 flex items-center justify-center shadow-[0_0_60px_rgba(236,72,153,0.2)]">
+                    <div className="w-24 h-24 rounded-full bg-pink-500/10 border border-pink-500/40 opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-transform transition-opacity duration-700 flex items-center justify-center shadow-[0_0_60px_rgba(236,72,153,0.2)]">
                       <ExternalLink className="w-8 h-8 text-pink-500" />
                     </div>
                   </div>
 
                   <div className="absolute bottom-12 right-12 flex justify-end items-end">
-                    <div className="text-white/20 font-mono text-xl tracking-tighter opacity-0 group-hover:opacity-100 transition-all duration-700 delay-200">
+                    <div className="text-white/20 font-mono text-xl tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-200">
                       /{String(index + 1).padStart(2, '0')}
                     </div>
                   </div>
@@ -205,7 +214,7 @@ export default function ProjectPage() {
                   {project.tech.map((techName) => {
                     const tool = getSoftwareByName(techName);
                     return (
-                      <div key={techName} className="flex items-center gap-3 px-5 py-3 rounded-2xl border border-white/10 bg-white/5 hover:border-pink-500/30 transition-colors">
+                      <div key={techName} className="flex items-center gap-3 px-5 py-3 rounded-2xl border border-white/10 bg-white/5 hover:border-pink-500/30 transition-colors duration-300">
                         <div className="w-5 h-5 flex items-center justify-center">{tool.icon}</div>
                         <span className="text-gray-300 font-medium text-sm">{tool.name}</span>
                       </div>
@@ -220,7 +229,7 @@ export default function ProjectPage() {
                 <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-500 mb-8 border-b border-white/5 pb-4">Production Deliverables</h2>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {(project as any).deliverables?.map((item: string) => (
-                    <li key={item} className="flex items-center gap-4 text-gray-400 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-pink-500/20 transition-all">
+                    <li key={item} className="flex items-center gap-4 text-gray-400 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-pink-500/20 transition-colors duration-300">
                       <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
                       <span className="text-sm font-medium">{item}</span>
                     </li>
@@ -239,7 +248,8 @@ export default function ProjectPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/98 backdrop-blur-3xl overflow-hidden"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/98 overflow-hidden"
+            style={{ transform: 'translateZ(0)' }}
           >
             {/* Navigation Regions */}
             <div 
@@ -261,28 +271,29 @@ export default function ProjectPage() {
             {/* Navigation Arrows */}
             <button 
               onClick={(e) => { e.stopPropagation(); prevImage(); }}
-              className="absolute left-6 md:left-12 p-6 bg-black/40 hover:bg-pink-500/20 rounded-full transition-all border border-white/10 hover:border-pink-500/50 z-[110] group backdrop-blur-sm hidden md:flex items-center justify-center"
+              className="absolute left-6 md:left-12 p-6 bg-black/40 hover:bg-pink-500/20 rounded-full transition-opacity transition-transform border border-white/10 hover:border-pink-500/50 z-[110] group hidden md:flex items-center justify-center"
             >
               <ChevronLeft className="w-12 h-12 text-white group-hover:scale-110 transition-transform" />
             </button>
 
             <button 
               onClick={(e) => { e.stopPropagation(); nextImage(); }}
-              className="absolute right-6 md:right-12 p-6 bg-black/40 hover:bg-pink-500/20 rounded-full transition-all border border-white/10 hover:border-pink-500/50 z-[110] group backdrop-blur-sm hidden md:flex items-center justify-center"
+              className="absolute right-6 md:right-12 p-6 bg-black/40 hover:bg-pink-500/20 rounded-full transition-opacity transition-transform border border-white/10 hover:border-pink-500/50 z-[110] group hidden md:flex items-center justify-center"
             >
               <ChevronRight className="w-12 h-12 text-white group-hover:scale-110 transition-transform" />
             </button>
 
             <button 
               onClick={() => setSelectedIndex(null)}
-              className="absolute top-8 right-8 p-4 bg-black/40 hover:bg-pink-500/40 rounded-full transition-all z-[115] border border-white/20 group backdrop-blur-md"
+              className="absolute top-8 right-8 p-4 bg-black/40 hover:bg-pink-500/40 rounded-full transition-transform transition-opacity z-[115] border border-white/20 group"
             >
               <X className="w-10 h-10 text-white group-hover:rotate-90 transition-transform" />
             </button>
 
             <motion.div 
                key={selectedIndex}
-               className="relative w-[85vw] h-[80vh] md:w-[90vw] md:h-[85vh] flex items-center justify-center z-[102] pointer-events-auto cursor-grab active:cursor-grabbing"
+               className="relative w-[85vw] h-[80vh] md:w-[90vw] md:h-[85vh] flex items-center justify-center z-[102] pointer-events-auto cursor-grab active:cursor-grabbing transform-gpu"
+               style={{ transform: 'translateZ(0)' }}
                initial={{ opacity: 0, x: 100, scale: 0.8 }}
                animate={{ opacity: 1, x: 0, scale: 1 }}
                exit={{ opacity: 0, x: -100, scale: 0.8 }}
@@ -306,7 +317,7 @@ export default function ProjectPage() {
                 className="w-full h-full object-contain rounded-3xl shadow-[0_0_150px_rgba(0,0,0,1)] border border-white/10 pointer-events-auto"
               />
               
-              <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex items-center gap-6 px-10 py-3 bg-black/80 backdrop-blur-3xl rounded-full border border-white/10 shadow-3xl z-[110]">
+              <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex items-center gap-6 px-10 py-3 bg-black/80 rounded-full border border-white/10 shadow-3xl z-[110]">
                 <span className="text-pink-500 font-black text-2xl tracking-tighter">{selectedIndex + 1}</span>
                 <span className="text-gray-700 font-thin text-3xl">/</span>
                 <span className="text-gray-400 font-bold tracking-widest text-lg">{project.gallery.length + 1}</span>
@@ -319,4 +330,6 @@ export default function ProjectPage() {
       <Footer />
     </main>
   );
-}
+};
+
+export default React.memo(ProjectPage);

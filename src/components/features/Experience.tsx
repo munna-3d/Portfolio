@@ -79,7 +79,7 @@ export default function Experience() {
                             {/* Timeline Dot */}
                             <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-[#121212] border-2 border-pink-500 shadow-[0_0_10px_rgba(236,72,153,0.5)]" />
 
-                            <div className="group relative p-6 md:p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
+                            <div className="group relative p-6 md:p-8 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors duration-300 transform-gpu" style={{ transform: 'translateZ(0)' }}>
                                 {/* Hover Glow Effect */}
                                 <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
 
