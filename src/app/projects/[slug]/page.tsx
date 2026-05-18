@@ -16,15 +16,58 @@ const fadeInUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
 };
 
+const slideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 1000 : -1000,
+    opacity: 0,
+    scale: 0.8,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+    zIndex: 1,
+  },
+  exit: (direction: number) => ({
+    x: direction < 0 ? 1000 : -1000,
+    opacity: 0,
+    scale: 0.8,
+    zIndex: 0,
+  })
+};
+
 const ProjectPage = () => {
   const params = useParams();
   const slug = params?.slug as string;
   const project = projects.find((p) => p.slug === slug);
   const lenis = useLenis();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [direction, setDirection] = useState(0);
+  
+  // Touch handlers for swipe
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    if (distance > minSwipeDistance) nextImage();
+    if (distance < -minSwipeDistance) prevImage();
+  };
 
   const nextImage = useCallback(() => {
     if (project && selectedIndex !== null) {
+      setDirection(1);
       const totalImages = project.gallery.length + 1;
       setSelectedIndex((prev) => (prev !== null && prev < totalImages - 1 ? prev + 1 : 0));
     }
@@ -32,6 +75,7 @@ const ProjectPage = () => {
 
   const prevImage = useCallback(() => {
     if (project && selectedIndex !== null) {
+      setDirection(-1);
       const totalImages = project.gallery.length + 1;
       setSelectedIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : totalImages - 1));
     }
@@ -248,8 +292,11 @@ const ProjectPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/98 overflow-hidden"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/98 overflow-hidden touch-none"
             style={{ transform: 'translateZ(0)' }}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
           >
             {/* Navigation Regions */}
             <div 
@@ -290,39 +337,49 @@ const ProjectPage = () => {
               <X className="w-10 h-10 text-white group-hover:rotate-90 transition-transform" />
             </button>
 
-            <motion.div 
-               key={selectedIndex}
-               className="relative w-[85vw] h-[80vh] md:w-[90vw] md:h-[85vh] flex items-center justify-center z-[102] pointer-events-auto cursor-grab active:cursor-grabbing transform-gpu"
-               style={{ transform: 'translateZ(0)' }}
-               initial={{ opacity: 0, x: 100, scale: 0.8 }}
-               animate={{ opacity: 1, x: 0, scale: 1 }}
-               exit={{ opacity: 0, x: -100, scale: 0.8 }}
-               drag="x"
-               dragConstraints={{ left: 0, right: 0 }}
-               dragElastic={0.7}
-               onDragEnd={(e, { offset, velocity }) => {
-                 const swipe = offset.x;
-                 const threshold = 100;
-                 if (swipe < -threshold) {
-                   nextImage();
-                 } else if (swipe > threshold) {
-                   prevImage();
-                 }
-               }}
-               transition={{ type: "spring", damping: 25, stiffness: 120 }}
-            >
-              <img 
-                src={[project.image, ...project.gallery][selectedIndex]} 
-                alt="Full Screen View" 
-                className="w-full h-full object-contain rounded-3xl shadow-[0_0_150px_rgba(0,0,0,1)] border border-white/10 pointer-events-auto"
-              />
-              
-              <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex items-center gap-6 px-10 py-3 bg-black/80 rounded-full border border-white/10 shadow-3xl z-[110]">
-                <span className="text-pink-500 font-black text-2xl tracking-tighter">{selectedIndex + 1}</span>
-                <span className="text-gray-700 font-thin text-3xl">/</span>
-                <span className="text-gray-400 font-bold tracking-widest text-lg">{project.gallery.length + 1}</span>
-              </div>
-            </motion.div>
+            <div className="relative w-[85vw] h-[80vh] md:w-[90vw] md:h-[85vh] flex items-center justify-center z-[102] pointer-events-auto">
+              <AnimatePresence initial={false} custom={direction}>
+                <motion.div 
+                   key={selectedIndex}
+                   custom={direction}
+                   variants={slideVariants}
+                   initial="enter"
+                   animate="center"
+                   exit="exit"
+                   transition={{
+                     x: { type: "spring", stiffness: 300, damping: 30 },
+                     opacity: { duration: 0.4 },
+                     scale: { duration: 0.4 }
+                   }}
+                   className="absolute inset-0 flex items-center justify-center cursor-grab active:cursor-grabbing transform-gpu"
+                   style={{ transform: 'translateZ(0)' }}
+                   drag="x"
+                   dragConstraints={{ left: 0, right: 0 }}
+                   dragElastic={0.7}
+                   onDragEnd={(e, { offset, velocity }) => {
+                     const swipe = offset.x;
+                     const threshold = 100;
+                     if (swipe < -threshold) {
+                       nextImage();
+                     } else if (swipe > threshold) {
+                       prevImage();
+                     }
+                   }}
+                >
+                  <img 
+                    src={[project.image, ...project.gallery][selectedIndex]} 
+                    alt="Full Screen View" 
+                    className="w-full h-full object-contain rounded-3xl shadow-[0_0_150px_rgba(0,0,0,1)] border border-white/10 pointer-events-auto"
+                  />
+                  
+                  <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex items-center gap-6 px-10 py-3 bg-black/80 rounded-full border border-white/10 shadow-3xl z-[110]">
+                    <span className="text-pink-500 font-black text-2xl tracking-tighter">{selectedIndex + 1}</span>
+                    <span className="text-gray-700 font-thin text-3xl">/</span>
+                    <span className="text-gray-400 font-bold tracking-widest text-lg">{project.gallery.length + 1}</span>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
