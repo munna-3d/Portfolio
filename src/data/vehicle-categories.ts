@@ -34,16 +34,29 @@ export const vehicleCategories: VehicleCategory[] = [
   },
   {
     slug: "sci-fi",
-    title: "Cyber/Sci-Fi Vehicle",
-    image: "https://cdnb.artstation.com/p/assets/images/images/053/479/787/large/moon-3d-0044.jpg?1662318231",
-    description: "Futuristic concepts and hovering scout ships from the year 3000.",
-    about: "Experimental designs focusing on unconventional propulsion systems and paneling. I used heavy kitbashing techniques and custom trim sheets to achieve a high level of technical detail.",
-    software: ["Maya", "ZBrush", "Substance Painter", "Unreal Engine"],
-    deliverables: ["Detailed Hero Asset", "Custom Trim Sheet Layout", "Animated Thruster Effects", "Decal Atlas Profile"],
+    title: "Cyber/Sci-Fi",
+    image: "https://cdnb.artstation.com/p/assets/covers/images/099/310/031/large/munna-moon3d-munna-moon3d-thm.jpg?1779569876",
+    description: "A futuristic tactical heavy vehicle with exposed mechanics and aggressive proportions.",
+    about: "HEXA BISON started as a personal challenge to design an original vehicle instead of recreating an existing car. The objective was to create something that feels futuristic while still looking mechanically believable — combining exposed engineering details, aggressive proportions, and a grounded industrial design language.",
+    software: ["Blender", "Substance 3D Painter", "Unreal Engine"],
+    deliverables: ["Futuristic Original Concept", "Exposed Mechanical Suspension", "Game-Ready Real-time Optimization", "PBR Carbon & Metal Shaders"],
     gallery: [
-      "https://cdnb.artstation.com/p/assets/images/images/053/479/787/large/moon-3d-0044.jpg?1662318231",
-      "https://cdnb.artstation.com/p/assets/images/images/053/479/767/large/moon-3d-4k.jpg?1662318142",
-      "https://cdna.artstation.com/p/assets/images/images/072/115/982/large/moon3d-design-untitl-ed.jpg?1706684742"
+      "https://cdna.artstation.com/p/assets/images/images/099/309/650/large/munna-moon3d-7.jpg?1779568663",
+      "https://cdnb.artstation.com/p/assets/images/images/099/309/651/large/munna-moon3d-8.jpg?1779568667",
+      "https://cdnb.artstation.com/p/assets/images/images/099/309/647/large/munna-moon3d-4.jpg?1779568649",
+      "https://cdnb.artstation.com/p/assets/images/images/099/309/959/large/munna-moon3d-w-1.jpg?1779569596",
+      "https://cdnb.artstation.com/p/assets/images/images/099/309/643/large/munna-moon3d-2.jpg?1779568640",
+      "https://cdnb.artstation.com/p/assets/images/images/099/309/645/large/munna-moon3d-3.jpg?1779568645",
+      "https://cdnb.artstation.com/p/assets/images/images/099/309/641/large/munna-moon3d-1.jpg?1779568636",
+      "https://cdna.artstation.com/p/assets/images/images/099/309/648/large/munna-moon3d-5.jpg?1779568654",
+      "https://cdnb.artstation.com/p/assets/images/images/099/309/649/large/munna-moon3d-6.jpg?1779568658",
+      "https://cdna.artstation.com/p/assets/images/images/099/309/652/large/munna-moon3d-screenshot-2026-05-24-013052.jpg?1779568671",
+      "https://cdnb.artstation.com/p/assets/images/images/099/309/935/large/munna-moon3d-screenshot-2026-05-24-013752.jpg?1779569511",
+      "https://cdnb.artstation.com/p/assets/images/images/099/309/937/large/munna-moon3d-screenshot-2026-05-24-013805.jpg?1779569515",
+      "https://cdna.artstation.com/p/assets/images/images/099/309/654/large/munna-moon3d-screenshot-2026-05-24-013108.jpg?1779568675",
+      "https://cdna.artstation.com/p/assets/images/images/099/309/666/large/munna-moon3d-screenshot-2026-05-24-013943.jpg?1779568700",
+      "https://cdnb.artstation.com/p/assets/images/images/099/309/667/large/munna-moon3d-screenshot-2026-05-23-230245.jpg?1779568703",
+      "https://cdna.artstation.com/p/assets/images/images/099/309/668/large/munna-moon3d-screenshot-2026-05-23-234348.jpg?1779568706"
     ]
   },
   {

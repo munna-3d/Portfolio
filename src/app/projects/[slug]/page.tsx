@@ -44,26 +44,7 @@ const ProjectPage = () => {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [direction, setDirection] = useState(0);
   
-  // Touch handlers for swipe
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const minSwipeDistance = 50;
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    if (distance > minSwipeDistance) nextImage();
-    if (distance < -minSwipeDistance) prevImage();
-  };
 
   const nextImage = useCallback(() => {
     if (project && selectedIndex !== null) {
@@ -294,19 +275,16 @@ const ProjectPage = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/98 overflow-hidden touch-none"
             style={{ transform: 'translateZ(0)' }}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
           >
             {/* Navigation Regions */}
             <div 
-              className="absolute inset-y-0 left-0 w-[30%] z-[105] cursor-pointer group"
+              className="absolute inset-y-0 left-0 w-[30%] z-[105] cursor-pointer group hidden md:block"
               onClick={(e) => { e.stopPropagation(); prevImage(); }}
             >
                <div className="absolute inset-y-0 left-0 w-full bg-gradient-to-r from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
             <div 
-              className="absolute inset-y-0 right-0 w-[30%] z-[105] cursor-pointer group"
+              className="absolute inset-y-0 right-0 w-[30%] z-[105] cursor-pointer group hidden md:block"
               onClick={(e) => { e.stopPropagation(); nextImage(); }}
             >
                <div className="absolute inset-y-0 right-0 w-full bg-gradient-to-l from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -355,13 +333,14 @@ const ProjectPage = () => {
                    style={{ transform: 'translateZ(0)' }}
                    drag="x"
                    dragConstraints={{ left: 0, right: 0 }}
-                   dragElastic={0.7}
+                   dragElastic={1}
                    onDragEnd={(e, { offset, velocity }) => {
                      const swipe = offset.x;
-                     const threshold = 100;
-                     if (swipe < -threshold) {
+                     const swipePower = Math.abs(offset.x) * velocity.x;
+                     // Trigger if swiped far enough OR fast enough
+                     if (swipe < -50 || swipePower < -50000) {
                        nextImage();
-                     } else if (swipe > threshold) {
+                     } else if (swipe > 50 || swipePower > 50000) {
                        prevImage();
                      }
                    }}
