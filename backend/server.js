@@ -17,9 +17,11 @@ const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || "portfolio_secure_jwt_secret_2026";
 
 // Directories
-const DATA_DIR = path.join(__dirname, "data");
+const IS_VERCEL = Boolean(process.env.VERCEL);
+const DATA_DIR = IS_VERCEL ? "/tmp" : path.join(__dirname, "data");
 const DB_PATH = path.join(DATA_DIR, "db.json");
-const UPLOAD_DIR = path.join(__dirname, "uploads");
+const ORIGINAL_DB_PATH = path.join(__dirname, "data", "db.json");
+const UPLOAD_DIR = IS_VERCEL ? "/tmp/uploads" : path.join(__dirname, "uploads");
 
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
 if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -83,6 +85,14 @@ const upload = multer({
 // Database Helpers
 async function readDb() {
   try {
+    if (!existsSync(DB_PATH) && existsSync(ORIGINAL_DB_PATH)) {
+      try {
+        const seedData = await fs.readFile(ORIGINAL_DB_PATH, "utf-8");
+        await fs.writeFile(DB_PATH, seedData, "utf-8");
+      } catch (seedErr) {
+        console.error("Failed to seed Vercel DB:", seedErr);
+      }
+    }
     const raw = await fs.readFile(DB_PATH, "utf-8");
     const db = JSON.parse(raw);
 
@@ -615,8 +625,12 @@ app.use((err, req, res, next) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
-  console.log(`Portfolio Backend running on http://localhost:${PORT}`);
-  console.log(`API Base: http://localhost:${PORT}/api`);
-  console.log(`Uploads available at: http://localhost:${PORT}/uploads`);
-});
+if (!IS_VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Portfolio Backend running on http://localhost:${PORT}`);
+    console.log(`API Base: http://localhost:${PORT}/api`);
+    console.log(`Uploads available at: http://localhost:${PORT}/uploads`);
+  });
+}
+
+export default app;
