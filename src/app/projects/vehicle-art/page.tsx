@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
-import { vehicleCategories } from "@/data/vehicle-categories";
+import { motion } from "framer-motion";
+import { vehicleCategories as defaultVehicleCategories } from "@/data/vehicle-categories";
+import { fetchVehicleCategories, formatImageUrl } from "@/lib/api";
+import { VehicleCategory } from "@/types";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 
@@ -22,17 +23,20 @@ const cardSlideIn = {
   })
 };
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
 export default function VehicleArtGallery() {
+  const [categories, setCategories] = useState<VehicleCategory[]>(defaultVehicleCategories);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchVehicleCategories().then((data) => {
+      if (isMounted && data && data.length > 0) {
+        setCategories(data);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   return (
     <main className="min-h-screen bg-[#121212] text-white">
       <Navbar />
@@ -64,7 +68,7 @@ export default function VehicleArtGallery() {
           initial="hidden"
           animate="visible"
         >
-          {vehicleCategories.map((category, i) => (
+          {categories.map((category, i) => (
             <motion.div
               key={category.slug}
               custom={i}
@@ -81,7 +85,7 @@ export default function VehicleArtGallery() {
                   
                   {/* Image */}
                   <img
-                    src={category.image}
+                    src={formatImageUrl(category.image)}
                     alt={category.title}
                     className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-100"
                   />

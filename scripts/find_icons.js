@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const icons = require('simple-icons');
 
 const searchTerms = [

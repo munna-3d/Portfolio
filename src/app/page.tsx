@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ScrollyCanvas from "@/components/features/ScrollyCanvas";
 import Projects from "@/components/features/Projects";
 import Productions from "@/components/features/Productions";
@@ -14,15 +14,15 @@ import {
   Car,
   Gamepad2,
   Monitor,
-  Zap,
   Mail,
   Phone,
   MapPin,
-  ExternalLink,
-  Pentagon
+  Settings,
 } from "lucide-react";
-
+import Link from "next/link";
+import { motion } from "framer-motion";
 import { softwareTools } from "@/data/software";
+import { fetchContent, PortfolioData, defaultHero, defaultProfile } from "@/lib/api";
 
 const expertise = [
   { name: "Hard-Surface Modeling", icon: <Box className="w-5 h-5" /> },
@@ -32,8 +32,6 @@ const expertise = [
   { name: "UV Optimization", icon: <Cpu className="w-5 h-5" /> },
   { name: "Real-Time Rendering", icon: <Monitor className="w-5 h-5" /> },
 ];
-
-import { motion } from "framer-motion";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 0 },
@@ -51,9 +49,17 @@ const staggerContainer = {
 };
 
 export default function Home() {
-  const [activePopup, setActivePopup] = React.useState<string | null>(null);
+  const [content, setContent] = useState<PortfolioData | null>(null);
+  const [activePopup, setActivePopup] = useState<string | null>(null);
 
-  // ... (keep images and getPopupContent same) ...
+  useEffect(() => {
+    fetchContent().then((res) => setContent(res));
+  }, []);
+
+  const hero = content?.hero || defaultHero;
+  const profile = content?.profile || defaultProfile;
+  const projectsList = content?.projects;
+
   // Hardcoded images for Hard-Surface Modeling popup showcase
   const hardSurfaceImages = [
     "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=1200",
@@ -72,14 +78,14 @@ export default function Home() {
   ];
 
   // Images for Hard Surface Asset popup
-   const hardSurfaceAssetImages = [
-    "https://images.unsplash.com/photo-1595590424283-b8f17842773f?auto=format&fit=crop&q=80&w=1200", // Using placeholder for now
+  const hardSurfaceAssetImages = [
+    "https://images.unsplash.com/photo-1595590424283-b8f17842773f?auto=format&fit=crop&q=80&w=1200",
     "https://images.unsplash.com/photo-1595590424283-b8f17842773f?auto=format&fit=crop&q=80&w=1200",
   ];
 
   // Images for Environment Design popup
-   const environmentImages = [
-    "https://images.unsplash.com/photo-1614728263952-84ea256f9679?auto=format&fit=crop&q=80&w=1200", // Using placeholder
+  const environmentImages = [
+    "https://images.unsplash.com/photo-1614728263952-84ea256f9679?auto=format&fit=crop&q=80&w=1200",
     "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=1200",
   ];
 
@@ -113,7 +119,7 @@ export default function Home() {
           images: environmentImages,
           tech: "Unreal Engine • Blender • Photoshop"
         };
-      default: // Fallback
+      default:
         return {
           title: popupName,
           description: "Project details showcasing 3D artistry and technical skills.",
@@ -128,7 +134,7 @@ export default function Home() {
   return (
     <main className="bg-[#121212] min-h-screen relative">
       <Navbar />
-      <ScrollyCanvas />
+      <ScrollyCanvas hero={hero} />
 
       {/* Expertise & Skills Section */}
       <section id="expertise" className="py-24 px-6 max-w-7xl mx-auto">
@@ -152,7 +158,7 @@ export default function Home() {
                   className="group relative flex items-center gap-4 p-4 rounded-xl overflow-hidden transition-transform transition-shadow transition-colors duration-300 will-change-[transform,opacity] transform-gpu"
                   style={{ transform: 'translateZ(0)' }}
                 >
-                  {/* Glowing Border Background - Always Visible & Rotating - Cyan/Blue Tone */}
+                  {/* Glowing Border Background */}
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-emerald-500 blur-md animate-spin-slow opacity-70" />
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-emerald-500 blur-lg opacity-40" />
 
@@ -193,18 +199,10 @@ export default function Home() {
                   className="group relative flex items-center gap-3 px-6 py-4 rounded-full overflow-hidden transition-transform transition-colors duration-150 hover:-translate-y-1 will-change-[transform,opacity] transform-gpu"
                   style={{ transform: 'translateZ(0)' }}
                 >
-                  {/* Glowing Border Background */}
-                  {/* Glowing Border Background - Always Visible & Rotating */}
                   <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 blur-md animate-spin-slow opacity-70" />
                   <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 blur-lg opacity-40" />
-
-                  {/* Glass Background & Border (Overlaying the glow) */}
                   <div className="absolute inset-[1px] rounded-full bg-[#1a1a1a]/95 border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),inset_0_-1px_0_0_rgba(0,0,0,0.3)] transition-colors transition-border-color duration-150 group-hover:bg-[#1a1a1a]/85 group-hover:border-white/20" />
-
-                  {/* Glossy Reflection (Top) */}
                   <div className="absolute inset-x-4 top-[1px] h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                  {/* Inner Content */}
                   <div className="relative z-10 flex items-center gap-3">
                     <div className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
                       {tool.icon}
@@ -218,11 +216,11 @@ export default function Home() {
         </div>
       </section>
 
-      <Experience />
+      <Experience experiences={content?.experiences} />
 
-      <Projects onPopup={(name: string) => setActivePopup(name)} />
+      <Projects projects={projectsList} onPopup={(name: string) => setActivePopup(name)} />
 
-      <Productions />
+      <Productions productions={content?.productions} />
 
       {/* Contact Section */}
       <section id="contact" className="py-32 px-6 bg-gradient-to-b from-[#121212] to-[#0a0a0a] border-y border-white/5">
@@ -237,7 +235,7 @@ export default function Home() {
               Let&apos;s Create <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">Something Amazing</span>
             </h2>
             <p className="text-gray-500 text-lg md:text-xl mb-16 max-w-2xl mx-auto">
-              Currently available for select freelance opportunities and high-impact 3D production roles.
+              {profile.bio}
             </p>
           </motion.div>
 
@@ -248,23 +246,23 @@ export default function Home() {
             variants={staggerContainer}
             className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
           >
-            <motion.a href="mailto:moon3d.xx@gmail.com" variants={fadeInUp} className="flex flex-col items-center p-8 bg-white/5 border border-white/10 rounded-3xl hover:bg-white/10 transition-all group">
+            <motion.a href={`mailto:${profile.email}`} variants={fadeInUp} className="flex flex-col items-center p-8 bg-white/5 border border-white/10 rounded-3xl hover:bg-white/10 transition-all group">
               <div className="p-4 bg-pink-500/10 text-pink-500 rounded-2xl mb-4 group-hover:scale-110 transition-transform">
                 <Mail className="w-8 h-8" />
               </div>
-              <span className="text-white font-medium">moon3d.xx@gmail.com</span>
+              <span className="text-white font-medium">{profile.email}</span>
             </motion.a>
             <motion.div variants={fadeInUp} className="flex flex-col items-center p-8 bg-white/5 border border-white/10 rounded-3xl group">
               <div className="p-4 bg-indigo-500/10 text-indigo-500 rounded-2xl mb-4">
                 <Phone className="w-8 h-8" />
               </div>
-              <span className="text-white font-medium">+91 9957277403</span>
+              <span className="text-white font-medium">{profile.phone}</span>
             </motion.div>
             <motion.div variants={fadeInUp} className="flex flex-col items-center p-8 bg-white/5 border border-white/10 rounded-3xl group">
               <div className="p-4 bg-purple-500/10 text-purple-500 rounded-2xl mb-4">
                 <MapPin className="w-8 h-8" />
               </div>
-              <span className="text-white font-medium">Assam, India</span>
+              <span className="text-white font-medium">{profile.location}</span>
             </motion.div>
           </motion.div>
         </div>
@@ -273,17 +271,12 @@ export default function Home() {
       <footer className="w-full py-16 px-6 bg-[#0a0a0a]">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
           <div className="text-center md:text-left">
-            <h3 className="text-3xl font-bold text-white tracking-tighter mb-1">MUNNA AHMED</h3>
-            <p className="text-pink-500/70 text-sm font-medium tracking-widest uppercase">Certified 3D Artist</p>
+            <h3 className="text-3xl font-bold text-white tracking-tighter mb-1">{profile.name}</h3>
+            <p className="text-pink-500/70 text-sm font-medium tracking-widest uppercase">{profile.title}</p>
           </div>
 
-          <div className="flex gap-12">
-            {[
-              { name: "ArtStation", url: "https://moon3dx.artstation.com/" },
-              { name: "LinkedIn", url: "https://www.linkedin.com/in/moon3d/" },
-              { name: "Fiverr", url: "https://www.fiverr.com/s/zWKmWr3" },
-              { name: "Contact", url: "/contact" }
-            ].map((link) => (
+          <div className="flex flex-wrap items-center gap-8">
+            {profile.socials.map((link) => (
               <a
                 key={link.name}
                 href={link.url}
@@ -294,10 +287,23 @@ export default function Home() {
                 {link.name}
               </a>
             ))}
+            <Link
+              href="/contact"
+              className="text-gray-500 hover:text-white transition-all hover:scale-105"
+            >
+              Contact
+            </Link>
+            <Link
+              href="/admin"
+              className="flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-pink-500/20 text-gray-400 hover:text-pink-400 rounded-full border border-white/10 transition-all text-xs font-semibold"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              Admin
+            </Link>
           </div>
 
           <div className="flex flex-col md:flex-row items-center gap-6">
-            <p className="text-gray-700 text-sm">© 2024 Munna Ahmed. All rights reserved. Built with precision for the next generation of games.</p>
+            <p className="text-gray-700 text-sm">© {new Date().getFullYear()} {profile.name}. All rights reserved. Built with precision for the next generation of games.</p>
           </div>
         </div>
       </footer>

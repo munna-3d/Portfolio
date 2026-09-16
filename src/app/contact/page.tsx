@@ -178,6 +178,17 @@ export default function ContactPage() {
         e.preventDefault();
         if (!formData.name || !formData.email || !formData.message || !formData.phone) return;
         
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email.trim())) {
+            setFormState("error");
+            setStatusMessage("Please enter a valid email address.");
+            setTimeout(() => {
+                setFormState("idle");
+                setStatusMessage("");
+            }, 4000);
+            return;
+        }
+
         setFormState("submitting");
         setStatusMessage("");
 
@@ -214,6 +225,7 @@ export default function ContactPage() {
                 setStatusMessage("");
             }, 6000);
         } catch (error) {
+            console.error("Failed to send contact message:", error);
             setFormState("error");
             setStatusMessage("Something went wrong");
             

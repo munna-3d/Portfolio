@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Instagram, Facebook, Linkedin, Youtube, ExternalLink } from "lucide-react";
+import { Linkedin, Youtube, ExternalLink } from "lucide-react";
 
 export default function Footer() {
     return (
@@ -75,19 +75,23 @@ export default function Footer() {
                     <div className="space-y-6">
                         <h3 className="font-bold tracking-widest uppercase text-gray-400">Social</h3>
                         <div className="space-y-4">
-                            <a href="https://moon3dx.artstation.com/" target="_blank" className="flex items-center gap-3 text-gray-500 hover:text-white transition-colors group">
-                                <Instagram className="w-5 h-5 group-hover:text-pink-500" />
+                            <a href="https://moon3dx.artstation.com/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-500 hover:text-white transition-colors group">
+                                <svg className="w-5 h-5 fill-current group-hover:text-[#13AFF0] transition-colors" viewBox="0 0 24 24">
+                                    <path d="M0 17.723l2.027 3.505h.001a2.424 2.424 0 0 0 2.164 1.332h13.754l-2.766-4.837H0zm23.555-3.045l-7.399-12.78A2.43 2.43 0 0 0 14.05 0.5H9.95a2.43 2.43 0 0 0-2.106 1.218L.742 14.188l3.19 5.567 3.738-6.522 5.09-8.887h3.454l4.24 7.4-3.899 6.814h5.666a2.422 2.422 0 0 0 2.105-1.22 2.42 2.42 0 0 0 .229-2.161zM11.606 14.36l-2.316 4.04h4.632l-2.316-4.04z" />
+                                </svg>
                                 <span className="font-medium">ARTSTATION</span>
                             </a>
-                            <a href="https://www.linkedin.com/in/moon3d/" target="_blank" className="flex items-center gap-3 text-gray-500 hover:text-white transition-colors group">
+                            <a href="https://www.linkedin.com/in/moon3d/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-500 hover:text-white transition-colors group">
                                 <Linkedin className="w-5 h-5 group-hover:text-blue-500" />
                                 <span className="font-medium">LINKEDIN</span>
                             </a>
-                            <a href="https://www.fiverr.com/munna4020/3d-model-cars-and-trucks-using-blender-for-3d-modeling-and-rendering?ref_ctx_id=83c3092200974c52809296361b57d6fa&pckg_id=1&source=seller_page" target="_blank" className="flex items-center gap-3 text-gray-500 hover:text-white transition-colors group">
-                                <Facebook className="w-5 h-5 group-hover:text-green-600" />
+                            <a href="https://www.fiverr.com/munna4020/3d-model-cars-and-trucks-using-blender-for-3d-modeling-and-rendering?ref_ctx_id=83c3092200974c52809296361b57d6fa&pckg_id=1&source=seller_page" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-500 hover:text-white transition-colors group">
+                                <svg className="w-5 h-5 fill-current group-hover:text-[#1dbf73] transition-colors" viewBox="0 0 24 24">
+                                    <path d="M23.002 12c0 6.075-4.925 11-11 11s-11-4.925-11-11 4.925-11 11-11 11 4.925 11 11zm-7.663-3.238h-1.503c-.767 0-1.127.387-1.127 1.058v.928h2.63v2.097h-2.63v5.155H8.056v-5.155H6.513v-2.097h1.543v-1.29c0-1.78 1.135-2.895 3.013-2.895h2.273v2.199z" />
+                                </svg>
                                 <span className="font-medium">FIVERR</span>
                             </a>
-                            <a href="https://www.youtube.com/@moon3d" target="_blank" className="flex items-center gap-3 text-gray-500 hover:text-white transition-colors group">
+                            <a href="https://www.youtube.com/@moon3d" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-500 hover:text-white transition-colors group">
                                 <Youtube className="w-5 h-5 group-hover:text-red-500" />
                                 <span className="font-medium">YOUTUBE</span>
                             </a>
@@ -96,7 +100,7 @@ export default function Footer() {
                 </div>
 
                 <div className="mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-600 text-xs font-bold tracking-widest">
-                    <span>© 2024 MUNNA AHMED. ALL RIGHTS RESERVED.</span>
+                    <span>© {new Date().getFullYear()} MUNNA AHMED. ALL RIGHTS RESERVED.</span>
                     <span className="flex items-center gap-2">DESIGNED BY <span className="text-white">MOON3D</span> <ExternalLink className="w-3 h-3" /></span>
                 </div>
             </div>

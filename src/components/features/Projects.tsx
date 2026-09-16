@@ -2,13 +2,18 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { projects } from "@/data/projects";
+import { projects as defaultProjects } from "@/data/projects";
+import { Project } from "@/types";
+import { formatImageUrl } from "@/lib/api";
 
 interface ProjectsProps {
-    onPopup: (name: string) => void;
+    projects?: Project[];
+    onPopup?: (name: string) => void;
 }
 
-export default function Projects({ onPopup }: ProjectsProps) {
+export default function Projects({ projects = defaultProjects }: ProjectsProps) {
+    const activeProjects = projects && projects.length > 0 ? projects : defaultProjects;
+
     return (
         <section id="projects" className="relative w-full py-32 bg-[#121212] text-white">
             <div className="max-w-7xl mx-auto px-6">
@@ -23,7 +28,7 @@ export default function Projects({ onPopup }: ProjectsProps) {
                 </motion.h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {projects.map((project, index) => (
+                    {activeProjects.map((project, index) => (
                         <Link href={`/projects/${project.slug}`} key={project.slug}>
                             <motion.div
                                 initial={{ opacity: 0, y: 30 }}
@@ -60,7 +65,7 @@ export default function Projects({ onPopup }: ProjectsProps) {
                                     <div className="absolute inset-0 z-0">
                                         <div
                                             className="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                                            style={{ backgroundImage: `url(${project.image})` }}
+                                            style={{ backgroundImage: `url(${formatImageUrl(project.image)})` }}
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                                     </div>

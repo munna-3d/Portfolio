@@ -1,12 +1,17 @@
 "use client";
 
 import { useScroll, useTransform, useMotionValueEvent, motion, useSpring } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import Overlay from "../layout/Overlay";
+import { HeroContent } from "@/types";
 
 const FRAME_COUNT = 19;
 
-export default function ScrollyCanvas() {
+interface ScrollyCanvasProps {
+    hero?: HeroContent;
+}
+
+export default function ScrollyCanvas({ hero }: ScrollyCanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [images, setImages] = useState<HTMLImageElement[]>([]);
@@ -53,7 +58,7 @@ export default function ScrollyCanvas() {
         loadImages();
     }, []);
 
-    const renderFrame = (index: number) => {
+    const renderFrame = useCallback((index: number) => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
@@ -75,7 +80,7 @@ export default function ScrollyCanvas() {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-    };
+    }, [images]);
 
     useMotionValueEvent(frameIndex, "change", (latest) => {
         if (isLoaded) {
@@ -87,16 +92,18 @@ export default function ScrollyCanvas() {
         if (isLoaded && images.length > 0) {
             renderFrame(0);
         }
-    }, [isLoaded]);
+    }, [isLoaded, images.length, renderFrame]);
 
     // Handle window resize
     useEffect(() => {
         const handleResize = () => {
-            if (isLoaded) renderFrame(frameIndex.get());
+            if (isLoaded && typeof frameIndex.get === 'function') {
+                renderFrame(frameIndex.get());
+            }
         };
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, [isLoaded]);
+    }, [isLoaded, frameIndex, renderFrame]);
 
 
     return (
@@ -121,7 +128,7 @@ export default function ScrollyCanvas() {
                     className="block w-full h-full object-cover"
                 />
 
-                <Overlay scrollYProgress={scrollYProgress} />
+                <Overlay scrollYProgress={scrollYProgress} hero={hero} />
             </div>
         </div>
     );

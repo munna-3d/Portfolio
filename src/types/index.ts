@@ -27,3 +27,45 @@ export interface VehicleCategory {
   deliverables: string[];
   gallery: string[];
 }
+
+export interface HeroContent {
+  name: string;
+  role: string;
+  subtitle: string;
+  section2Headline: string;
+  section2Sub: string;
+  section3Headline: string;
+  section3Sub: string;
+  heroImage?: string;
+}
+
+export interface ProfileContent {
+  name: string;
+  title: string;
+  bio: string;
+  email: string;
+  phone: string;
+  location: string;
+  socials: { name: string; url: string }[];
+}
+
+export interface ExperienceItem {
+  id: string;
+  title: string;
+  company: string;
+  type: string;
+  date: string;
+  color?: string;
+  description: string[];
+}
+
+export interface ProductionItem {
+  id: string;
+  title: string;
+  type: string;
+  year: string;
+  role: string;
+  company: string;
+  image: string;
+}
+

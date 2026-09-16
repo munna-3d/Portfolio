@@ -24,7 +24,7 @@ export default function RootLayout({
       <body className="antialiased bg-background text-foreground">
 
         {/* Global Live Status Indicator */}
-        <div className="fixed top-6 right-6 z-[100] pointer-events-none">
+        <div className="fixed top-6 right-6 z-[80] pointer-events-none hidden sm:block">
           <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-md">
             <div className="relative">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
