@@ -1,0 +1,24 @@
+# =====================================================================
+# Render Blueprint Specification for Moon 3D Studio Backend
+# Documentation: https://render.com/docs/blueprint-spec
+# =====================================================================
+
+services:
+  - type: web
+    name: moon3d-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGIN
+        sync: false # Set this to your Vercel deployment URL (e.g. https://your-portfolio.vercel.app)
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false # Set this to your Vercel deployment URL (e.g. https://your-portfolio.vercel.app)

@@ -17,10 +17,21 @@ export default function ScrollyCanvas({ hero }: ScrollyCanvasProps) {
     const [images, setImages] = useState<HTMLImageElement[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
 
+    const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
     const { scrollYProgress } = useScroll({
         target: containerRef,
         offset: ["start start", "end end"]
     });
+
+    // Check prefers-reduced-motion preference
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+        setPrefersReducedMotion(mediaQuery.matches);
+        const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+        mediaQuery.addEventListener("change", handler);
+        return () => mediaQuery.removeEventListener("change", handler);
+    }, []);
 
     // Smooth scroll progress for the bar
     const scaleY = useSpring(scrollYProgress, {
@@ -58,6 +69,15 @@ export default function ScrollyCanvas({ hero }: ScrollyCanvasProps) {
         loadImages();
     }, []);
 
+    const updateCanvasDimensions = useCallback(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+    }, []);
+
     const renderFrame = useCallback((index: number) => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -67,8 +87,8 @@ export default function ScrollyCanvas({ hero }: ScrollyCanvasProps) {
 
         if (!ctx || !img) return;
 
-        // Handle resizing
-        if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+        // Ensure canvas dimensions are initialized without re-measuring window every frame
+        if (canvas.width === 0 || canvas.height === 0) {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
@@ -83,27 +103,34 @@ export default function ScrollyCanvas({ hero }: ScrollyCanvasProps) {
     }, [images]);
 
     useMotionValueEvent(frameIndex, "change", (latest) => {
-        if (isLoaded) {
+        if (isLoaded && !prefersReducedMotion) {
             renderFrame(latest);
         }
     });
 
     useEffect(() => {
         if (isLoaded && images.length > 0) {
+            updateCanvasDimensions();
             renderFrame(0);
         }
-    }, [isLoaded, images.length, renderFrame]);
+    }, [isLoaded, images.length, renderFrame, updateCanvasDimensions]);
 
-    // Handle window resize
+    // Handle window resize cleanly
     useEffect(() => {
         const handleResize = () => {
-            if (isLoaded && typeof frameIndex.get === 'function') {
-                renderFrame(frameIndex.get());
+            updateCanvasDimensions();
+            if (isLoaded) {
+                const currentFrame = prefersReducedMotion
+                    ? 0
+                    : typeof frameIndex.get === 'function'
+                    ? frameIndex.get()
+                    : 0;
+                renderFrame(currentFrame);
             }
         };
-        window.addEventListener('resize', handleResize);
+        window.addEventListener('resize', handleResize, { passive: true });
         return () => window.removeEventListener('resize', handleResize);
-    }, [isLoaded, frameIndex, renderFrame]);
+    }, [isLoaded, frameIndex, renderFrame, updateCanvasDimensions, prefersReducedMotion]);
 
 
     return (

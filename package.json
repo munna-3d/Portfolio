@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "backend": "node backend/server.js",
-    "backend:dev": "node --watch backend/server.js"
+    "backend:dev": "node --watch backend/server.js",
+    "backend:build": "npm --prefix backend install",
+    "backend:start": "node backend/server.js",
+    "render:build": "npm --prefix backend install",
+    "render:start": "node backend/server.js"
   },
   "dependencies": {
     "clsx": "^2.1.1",

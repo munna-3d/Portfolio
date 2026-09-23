@@ -1,5 +1,71 @@
 import React from "react";
-import { SoftwareTool } from "@/types";
+import { SoftwareTool, SoftwareToolItem } from "@/types";
+
+export const defaultSoftwareTools: SoftwareToolItem[] = [
+  {
+    id: "tool-1",
+    name: "Blender",
+    icon: "https://upload.wikimedia.org/wikipedia/commons/0/0c/Blender_logo_no_text.svg",
+    category: "3D Modeling & Animation",
+    invert: false,
+  },
+  {
+    id: "tool-2",
+    name: "Substance 3D Painter",
+    icon: "https://cdn.worldvectorlogo.com/logos/substance-3d-painter-1.svg",
+    category: "Texturing & Shading",
+    invert: false,
+  },
+  {
+    id: "tool-3",
+    name: "Marmoset Toolbag",
+    icon: "https://i.gyazo.com/83dced8f7fe0b22c1e3ff304f8bec747.png",
+    category: "LookDev & Baking",
+    invert: false,
+  },
+  {
+    id: "tool-4",
+    name: "Photoshop",
+    icon: "https://upload.wikimedia.org/wikipedia/commons/a/af/Adobe_Photoshop_CC_icon.svg",
+    category: "Post-Processing & Textures",
+    invert: false,
+  },
+  {
+    id: "tool-5",
+    name: "Unity",
+    icon: "https://cdn.worldvectorlogo.com/logos/unity-69.svg",
+    category: "Real-Time Engine",
+    invert: true,
+  },
+  {
+    id: "tool-6",
+    name: "Unreal Engine",
+    icon: "https://upload.wikimedia.org/wikipedia/commons/2/20/UE_Logo_Black_Centered.svg",
+    category: "Real-Time Engine",
+    invert: true,
+  },
+  {
+    id: "tool-7",
+    name: "Maya",
+    icon: "https://logosandtypes.com/wp-content/uploads/2025/03/maya.svg",
+    category: "3D Modeling & Rigging",
+    invert: false,
+  },
+  {
+    id: "tool-8",
+    name: "ZBrush",
+    icon: "https://www.svgrepo.com/show/508998/zbrush.svg",
+    category: "Digital Sculpting",
+    invert: true,
+  },
+  {
+    id: "tool-9",
+    name: "3ds Max",
+    icon: "https://cdn.worldvectorlogo.com/logos/autodesk-3ds-max.svg",
+    category: "Hard-Surface Modeling",
+    invert: false,
+  },
+];
 
 export const softwareTools: SoftwareTool[] = [
   {
@@ -22,7 +88,7 @@ export const softwareTools: SoftwareTool[] = [
       />
     ),
   },
-    {
+  {
     name: "Marmoset Toolbag",
     icon: (
       <img
@@ -42,16 +108,6 @@ export const softwareTools: SoftwareTool[] = [
       />
     ),
   },
-  /*{
-    name: "Premiere Pro",
-    icon: (
-      <img
-        src="https://upload.wikimedia.org/wikipedia/commons/4/40/Adobe_Premiere_Pro_CC_icon.svg"
-        alt="Premiere Pro"
-        className="w-10 h-10 object-contain"
-      />
-    ),
-  },*/
   {
     name: "Unity",
     icon: (
@@ -104,12 +160,32 @@ export const softwareTools: SoftwareTool[] = [
   },
 ];
 
-export const getSoftwareByName = (name: string) => {
+export const getSoftwareByName = (name: string, dynamicTools?: SoftwareToolItem[]) => {
   if (!name) return { name: "", icon: <div className="w-5 h-5 bg-gray-600 rounded-full" /> };
   
   const cleanName = name.trim().toLowerCase();
+
+  // Check dynamic tools first if provided
+  if (dynamicTools && dynamicTools.length > 0) {
+    const dynamicMatch = dynamicTools.find((t) => t.name.toLowerCase() === cleanName);
+    if (dynamicMatch) {
+      return {
+        name: dynamicMatch.name,
+        icon: (
+          <img
+            src={dynamicMatch.icon}
+            alt={dynamicMatch.name}
+            className={`w-5 h-5 object-contain ${dynamicMatch.invert ? "invert" : ""}`}
+            onError={(e) => {
+              (e.target as HTMLElement).style.display = "none";
+            }}
+          />
+        ),
+      };
+    }
+  }
   
-  // Exact or alias matching
+  // Exact or alias matching against built-in tools
   const found = softwareTools.find((tool) => {
     const toolName = tool.name.toLowerCase();
     if (toolName === cleanName) return true;
@@ -128,7 +204,11 @@ export const getSoftwareByName = (name: string) => {
   return (
     found || {
       name: name,
-      icon: <div className="w-5 h-5 bg-pink-500/20 border border-pink-500/40 rounded-full flex items-center justify-center text-[10px] font-bold text-pink-400">{name.charAt(0).toUpperCase()}</div>,
+      icon: (
+        <div className="w-5 h-5 bg-pink-500/20 border border-pink-500/40 rounded-full flex items-center justify-center text-[10px] font-bold text-pink-400">
+          {name.charAt(0).toUpperCase()}
+        </div>
+      ),
     }
   );
 };

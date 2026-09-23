@@ -27,8 +27,21 @@ import {
   reorderVehicleCategories,
   saveExperience,
   deleteExperience,
+  saveSoftwareTool,
+  deleteSoftwareTool,
+  reorderSoftwareTools,
+  fetchEnquiries,
+  updateEnquiryStatus,
+  deleteEnquiry,
 } from "@/lib/api";
-import { Project, VehicleCategory, ProductionItem, ExperienceItem } from "@/types";
+import {
+  Project,
+  VehicleCategory,
+  ProductionItem,
+  ExperienceItem,
+  SoftwareToolItem,
+  EnquiryItem,
+} from "@/types";
 import {
   Upload,
   Save,
@@ -58,6 +71,16 @@ import {
   ChevronsDown,
   GripVertical,
   ArrowUpDown,
+  Cpu,
+  Mail,
+  MessageSquare,
+  Inbox,
+  Eye,
+  Archive,
+  Phone,
+  User,
+  Clock,
+  CheckCheck,
 } from "lucide-react";
 
 const getErrorMessage = (err: unknown): string => {
@@ -109,7 +132,7 @@ export default function AdminDashboard() {
   // CMS Content State
   const [data, setData] = useState<PortfolioData | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "hero" | "projects" | "vehicles" | "productions" | "experiences" | "media" | "profile"
+    "hero" | "projects" | "vehicles" | "productions" | "experiences" | "software" | "media" | "enquiries" | "profile"
   >("hero");
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -117,6 +140,12 @@ export default function AdminDashboard() {
   const [backendStatus, setBackendStatus] = useState<
     "checking" | "online" | "offline"
   >("checking");
+
+  // Client Enquiries state
+  const [enquiries, setEnquiries] = useState<EnquiryItem[]>([]);
+  const [isEnquiriesLoading, setIsEnquiriesLoading] = useState(false);
+  const [enquiryFilter, setEnquiryFilter] = useState<"all" | "unread" | "read" | "replied" | "archived">("all");
+  const [selectedEnquiry, setSelectedEnquiry] = useState<EnquiryItem | null>(null);
 
   // Selected items for editing
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -131,6 +160,8 @@ export default function AdminDashboard() {
   const [editingExperience, setEditingExperience] =
     useState<ExperienceItem | null>(null);
   const [isNewExperience, setIsNewExperience] = useState(false);
+  const [editingSoftware, setEditingSoftware] = useState<SoftwareToolItem | null>(null);
+  const [isNewSoftware, setIsNewSoftware] = useState(false);
 
   // Input states for project/category list management
   const [newTechInput, setNewTechInput] = useState("");
@@ -205,17 +236,67 @@ export default function AdminDashboard() {
       if (res.productions?.length > 0 && !editingProduction) {
         setEditingProduction(res.productions[0]);
       }
+      if (res.softwareTools?.length > 0 && !editingSoftware) {
+        setEditingSoftware(res.softwareTools[0]);
+      }
     } catch {
       setBackendStatus("offline");
     }
-  }, [editingProject, editingCategory, editingProduction]);
+  }, [editingProject, editingCategory, editingProduction, editingSoftware]);
+
+  const loadEnquiries = useCallback(async () => {
+    setIsEnquiriesLoading(true);
+    try {
+      const list = await fetchEnquiries();
+      setEnquiries(Array.isArray(list) ? list : []);
+    } catch (err) {
+      console.error("Failed to load enquiries:", err);
+    } finally {
+      setIsEnquiriesLoading(false);
+    }
+  }, []);
+
+  const handleStatusChange = async (
+    id: string,
+    status: "unread" | "read" | "replied" | "archived"
+  ) => {
+    try {
+      await updateEnquiryStatus(id, status);
+      setEnquiries((prev) =>
+        prev.map((e) => (e.id === id ? { ...e, status } : e))
+      );
+      if (selectedEnquiry?.id === id) {
+        setSelectedEnquiry((prev) => (prev ? { ...prev, status } : null));
+      }
+    } catch (err) {
+      setErrorMessage(getErrorMessage(err) || "Failed to update enquiry status");
+      setTimeout(() => setErrorMessage(""), 4000);
+    }
+  };
+
+  const handleDeleteEnquiryItem = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this enquiry?")) return;
+    try {
+      await deleteEnquiry(id);
+      setEnquiries((prev) => prev.filter((e) => e.id !== id));
+      if (selectedEnquiry?.id === id) {
+        setSelectedEnquiry(null);
+      }
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2500);
+    } catch (err) {
+      setErrorMessage(getErrorMessage(err) || "Failed to delete enquiry");
+      setTimeout(() => setErrorMessage(""), 4000);
+    }
+  };
 
   useEffect(() => {
     if (currentUser) {
       loadData();
       loadMedia();
+      loadEnquiries();
     }
-  }, [currentUser, loadData, loadMedia]);
+  }, [currentUser, loadData, loadMedia, loadEnquiries]);
 
   // Auth Handlers
   const handleLogin = async (e: React.FormEvent) => {
@@ -223,7 +304,7 @@ export default function AdminDashboard() {
     setIsLoggingIn(true);
     setLoginError("");
     try {
-      const res = await loginAdmin(loginUsername, loginPassword);
+      const res = await loginAdmin(loginUsername.trim(), loginPassword.trim());
       setCurrentUser(res.user);
       setLoginPassword("");
     } catch (err) {
@@ -594,6 +675,83 @@ export default function AdminDashboard() {
     }
   };
 
+  // Save Software Tool
+  const handleSaveCurrentSoftware = async () => {
+    if (!editingSoftware) return;
+    if (!editingSoftware.name.trim()) {
+      setErrorMessage("Software tool name is required");
+      setTimeout(() => setErrorMessage(""), 3000);
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await saveSoftwareTool(editingSoftware, isNewSoftware);
+      setIsNewSoftware(false);
+      await loadData();
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      setErrorMessage(getErrorMessage(err) || "Failed to save software tool");
+      setTimeout(() => setErrorMessage(""), 4000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Delete Software Tool
+  const handleDeleteSoftware = async (id: string) => {
+    if (!confirm("Are you sure you want to permanently delete this software tool?")) return;
+    setIsSaving(true);
+    try {
+      await deleteSoftwareTool(id);
+      setEditingSoftware(null);
+      await loadData();
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      setErrorMessage(getErrorMessage(err) || "Failed to delete software tool");
+      setTimeout(() => setErrorMessage(""), 4000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Reorder Software Tools
+  const handleMoveSoftware = async (index: number, direction: "up" | "down") => {
+    if (!data?.softwareTools) return;
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= data.softwareTools.length) return;
+
+    const list = [...data.softwareTools];
+    const [moved] = list.splice(index, 1);
+    list.splice(targetIndex, 0, moved);
+
+    setData({ ...data, softwareTools: list });
+
+    try {
+      await reorderSoftwareTools(list);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+    } catch (err) {
+      setErrorMessage(getErrorMessage(err) || "Failed to reorder tools");
+      setTimeout(() => setErrorMessage(""), 3000);
+      await loadData();
+    }
+  };
+
+  // Create new Software Tool
+  const handleCreateNewSoftware = () => {
+    const newTool: SoftwareToolItem = {
+      id: `tool-${Date.now()}`,
+      name: "",
+      icon: "",
+      category: "3D Modeling",
+      invert: false,
+    };
+    setEditingSoftware(newTool);
+    setIsNewSoftware(true);
+  };
+
   // Filtered Media
   const filteredMedia = mediaList.filter((m) =>
     m.filename.toLowerCase().includes(mediaSearch.toLowerCase())
@@ -881,6 +1039,23 @@ export default function AdminDashboard() {
           </button>
 
           <button
+            onClick={() => setActiveTab("software")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold text-sm transition-all ${
+              activeTab === "software"
+                ? "bg-pink-500 text-white shadow-[0_0_20px_rgba(236,72,153,0.3)]"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
+            }`}
+          >
+            <Cpu className="w-4 h-4" />
+            Software Arsenal
+            {data?.softwareTools && data.softwareTools.length > 0 && (
+              <span className="ml-auto text-[10px] bg-white/10 px-2 py-0.5 rounded-full">
+                {data.softwareTools.length}
+              </span>
+            )}
+          </button>
+
+          <button
             onClick={() => {
               setActiveTab("media");
               loadMedia();
@@ -898,6 +1073,30 @@ export default function AdminDashboard() {
                 {mediaList.length}
               </span>
             )}
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab("enquiries");
+              loadEnquiries();
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold text-sm transition-all ${
+              activeTab === "enquiries"
+                ? "bg-pink-500 text-white shadow-[0_0_20px_rgba(236,72,153,0.3)]"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
+            }`}
+          >
+            <Mail className="w-4 h-4" />
+            Client Inbox
+            {enquiries.filter((e) => e.status === "unread").length > 0 ? (
+              <span className="ml-auto text-[10px] font-bold bg-pink-600 text-white px-2 py-0.5 rounded-full animate-pulse shadow-[0_0_10px_rgba(236,72,153,0.6)]">
+                {enquiries.filter((e) => e.status === "unread").length} NEW
+              </span>
+            ) : enquiries.length > 0 ? (
+              <span className="ml-auto text-[10px] bg-white/10 px-2 py-0.5 rounded-full">
+                {enquiries.length}
+              </span>
+            ) : null}
           </button>
 
           <button
@@ -2730,6 +2929,407 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* TAB: SOFTWARE ARSENAL */}
+          {activeTab === "software" && data && (
+            <div className="space-y-8">
+              <div className="flex flex-wrap items-center justify-between border-b border-white/10 pb-4 gap-4">
+                <div>
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <Cpu className="w-5 h-5 text-pink-500" />
+                    Software Arsenal & Tools
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Manage the 3D software, texturing tools, and real-time engines featured on your homepage.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleCreateNewSoftware}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-full font-bold text-xs uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(236,72,153,0.3)] hover:scale-105"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Software Tool
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* Left: Reorderable List */}
+                <div className="lg:col-span-5 space-y-3">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-xs uppercase font-bold text-gray-400 tracking-wider">
+                      Tools Order ({data.softwareTools?.length || 0})
+                    </span>
+                    <span className="text-[11px] text-gray-500">
+                      Use arrows to reorder
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 max-h-[680px] overflow-y-auto pr-1">
+                    {(data.softwareTools || []).map((tool, index) => {
+                      const isSelected = editingSoftware?.id === tool.id;
+                      return (
+                        <div
+                          key={tool.id}
+                          onClick={() => {
+                            setEditingSoftware(tool);
+                            setIsNewSoftware(false);
+                          }}
+                          className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer group ${
+                            isSelected
+                              ? "bg-white/10 border-pink-500/50 shadow-[0_0_15px_rgba(236,72,153,0.15)] ring-1 ring-pink-500/30"
+                              : "bg-white/5 border-white/10 hover:bg-white/[0.08] hover:border-white/20"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            {/* Icon thumbnail */}
+                            <div className="w-10 h-10 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center p-1.5 shrink-0">
+                              {tool.icon ? (
+                                <img
+                                  src={formatImageUrl(tool.icon)}
+                                  alt={tool.name}
+                                  className={`w-6 h-6 object-contain ${tool.invert ? "invert" : ""}`}
+                                  onError={(e) => {
+                                    (e.target as HTMLElement).style.display = "none";
+                                  }}
+                                />
+                              ) : (
+                                <span className="text-xs font-bold text-pink-400">
+                                  {tool.name.charAt(0).toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="min-w-0">
+                              <h4 className="text-sm font-bold text-white truncate group-hover:text-pink-300 transition-colors">
+                                {tool.name}
+                              </h4>
+                              {tool.category && (
+                                <p className="text-[11px] text-gray-400 truncate">
+                                  {tool.category}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Order actions */}
+                          <div
+                            className="flex items-center gap-1 shrink-0 ml-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <button
+                              type="button"
+                              disabled={index === 0}
+                              onClick={() => handleMoveSoftware(index, "up")}
+                              className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                              title="Move Up"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={index === (data.softwareTools?.length || 0) - 1}
+                              onClick={() => handleMoveSoftware(index, "down")}
+                              className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                              title="Move Down"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {(!data.softwareTools || data.softwareTools.length === 0) && (
+                      <div className="text-center py-12 px-4 border border-dashed border-white/10 rounded-2xl text-gray-500 text-xs">
+                        No software tools added yet. Click &ldquo;Add Software Tool&rdquo; to start.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right: Edit / Create Form */}
+                <div className="lg:col-span-7">
+                  {editingSoftware ? (
+                    <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-7 space-y-6">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                        <div>
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-pink-400 font-bold">
+                            {isNewSoftware ? "New Entry" : "Editing Entry"}
+                          </span>
+                          <h3 className="text-lg font-bold text-white">
+                            {editingSoftware.name || "Untitled Software"}
+                          </h3>
+                        </div>
+
+                        {/* Live Homepage Pill Preview */}
+                        <div className="hidden sm:flex flex-col items-end gap-1">
+                          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                            Live Preview
+                          </span>
+                          <div className="group relative inline-flex items-center gap-2.5 px-4 py-2 rounded-full overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 blur-sm opacity-70" />
+                            <div className="absolute inset-[1px] rounded-full bg-[#1a1a1a]/95 border border-white/10" />
+                            <div className="relative z-10 flex items-center gap-2">
+                              {editingSoftware.icon ? (
+                                <img
+                                  src={formatImageUrl(editingSoftware.icon)}
+                                  alt={editingSoftware.name}
+                                  className={`w-4 h-4 object-contain ${
+                                    editingSoftware.invert ? "invert" : ""
+                                  }`}
+                                  onError={(e) => {
+                                    (e.target as HTMLElement).style.display = "none";
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-4 h-4 rounded-full bg-pink-500/30 text-pink-400 font-bold text-[9px] flex items-center justify-center">
+                                  {editingSoftware.name
+                                    ? editingSoftware.name.charAt(0).toUpperCase()
+                                    : "?"}
+                                </div>
+                              )}
+                              <span className="text-xs font-semibold text-gray-200 tracking-wide">
+                                {editingSoftware.name || "Software Name"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Form Inputs */}
+                      <div className="space-y-5">
+                        {/* Name */}
+                        <div>
+                          <label className="block text-xs uppercase tracking-wider text-gray-400 font-bold mb-2">
+                            Software / Tool Name *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Blender, Unreal Engine 5, Substance 3D Painter..."
+                            value={editingSoftware.name}
+                            onChange={(e) =>
+                              setEditingSoftware({
+                                ...editingSoftware,
+                                name: e.target.value,
+                              })
+                            }
+                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-pink-500 outline-none"
+                          />
+                        </div>
+
+                        {/* Category */}
+                        <div>
+                          <label className="block text-xs uppercase tracking-wider text-gray-400 font-bold mb-2">
+                            Discipline / Category
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. 3D Modeling & Animation, Texturing, Real-Time Engine..."
+                            value={editingSoftware.category || ""}
+                            onChange={(e) =>
+                              setEditingSoftware({
+                                ...editingSoftware,
+                                category: e.target.value,
+                              })
+                            }
+                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-pink-500 outline-none"
+                          />
+
+                          {/* Quick Category Suggestions */}
+                          <div className="flex flex-wrap gap-1.5 mt-2.5">
+                            {[
+                              "3D Modeling & Animation",
+                              "Texturing & Shading",
+                              "LookDev & Baking",
+                              "Real-Time Engine",
+                              "Digital Sculpting",
+                              "Post-Processing & Textures",
+                              "Hard-Surface Modeling",
+                            ].map((tag) => (
+                              <button
+                                key={tag}
+                                type="button"
+                                onClick={() =>
+                                  setEditingSoftware({
+                                    ...editingSoftware,
+                                    category: tag,
+                                  })
+                                }
+                                className={`text-[10px] px-2.5 py-1 rounded-full border transition-all ${
+                                  editingSoftware.category === tag
+                                    ? "bg-pink-500/20 border-pink-500 text-pink-300 font-bold"
+                                    : "bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10"
+                                }`}
+                              >
+                                {tag}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Icon Image Section */}
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <label className="block text-xs uppercase tracking-wider text-gray-400 font-bold">
+                              Tool Logo / Icon Image
+                            </label>
+                            {editingSoftware.icon && (
+                              <span className="text-[10px] text-emerald-400 font-mono">
+                                ✓ Icon Configured
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-start gap-4">
+                            {/* Icon preview box */}
+                            <div className="w-16 h-16 rounded-2xl bg-black/50 border border-white/15 flex items-center justify-center p-2 shrink-0">
+                              {editingSoftware.icon ? (
+                                <img
+                                  src={formatImageUrl(editingSoftware.icon)}
+                                  alt="Icon preview"
+                                  className={`max-w-full max-h-full object-contain ${
+                                    editingSoftware.invert ? "invert" : ""
+                                  }`}
+                                  onError={(e) => {
+                                    (e.target as HTMLElement).style.display = "none";
+                                  }}
+                                />
+                              ) : (
+                                <ImageIcon className="w-6 h-6 text-gray-600" />
+                              )}
+                            </div>
+
+                            <div className="flex-1 space-y-2.5">
+                              {/* Upload / Pick Actions */}
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    triggerUpload((url) =>
+                                      setEditingSoftware({
+                                        ...editingSoftware,
+                                        icon: url,
+                                      })
+                                    )
+                                  }
+                                  className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/15 text-white rounded-xl text-xs font-semibold transition-colors"
+                                >
+                                  <Upload className="w-3.5 h-3.5 text-pink-400" />
+                                  Upload Icon File
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    openMediaPicker((url) =>
+                                      setEditingSoftware({
+                                        ...editingSoftware,
+                                        icon: url,
+                                      })
+                                    )
+                                  }
+                                  className="flex items-center gap-1.5 px-3 py-2 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white rounded-xl text-xs font-semibold border border-white/10 transition-colors"
+                                >
+                                  <FolderOpen className="w-3.5 h-3.5 text-purple-400" />
+                                  Select From Media
+                                </button>
+                              </div>
+
+                              {/* Direct URL input */}
+                              <input
+                                type="text"
+                                placeholder="Or paste image or SVG URL (e.g. https://...)"
+                                value={editingSoftware.icon}
+                                onChange={(e) =>
+                                  setEditingSoftware({
+                                    ...editingSoftware,
+                                    icon: e.target.value,
+                                  })
+                                }
+                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:border-pink-500 outline-none font-mono"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Invert Dark/Light Toggle */}
+                          <label className="flex items-center gap-3 pt-2 border-t border-white/5 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(editingSoftware.invert)}
+                              onChange={(e) =>
+                                setEditingSoftware({
+                                  ...editingSoftware,
+                                  invert: e.target.checked,
+                                })
+                              }
+                              className="w-4 h-4 rounded text-pink-500 focus:ring-0 focus:ring-offset-0 bg-black/40 border-white/20"
+                            />
+                            <div className="text-xs">
+                              <span className="text-white font-medium">
+                                Invert icon colors for dark theme
+                              </span>
+                              <p className="text-[11px] text-gray-500 mt-0.5">
+                                Enable for black logos (like Unreal Engine or Unity) so they turn white and shine against dark backgrounds.
+                              </p>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex items-center justify-between pt-6 border-t border-white/10">
+                        {!isNewSoftware && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSoftware(editingSoftware.id)}
+                            className="flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-red-500/10 rounded-xl text-xs font-bold uppercase transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Delete Tool
+                          </button>
+                        )}
+                        <div className="flex-1" />
+                        <button
+                          type="button"
+                          onClick={handleSaveCurrentSoftware}
+                          disabled={isSaving}
+                          className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-full font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(236,72,153,0.3)]"
+                        >
+                          <Save className="w-4 h-4" />
+                          {isSaving
+                            ? "Saving..."
+                            : isNewSoftware
+                            ? "Create Software Tool"
+                            : "Save Software Tool"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-full min-h-[350px] flex flex-col items-center justify-center p-8 bg-white/5 border border-white/10 rounded-3xl text-center">
+                      <Cpu className="w-12 h-12 text-gray-600 mb-3" />
+                      <h4 className="text-base font-bold text-gray-300">
+                        No Tool Selected
+                      </h4>
+                      <p className="text-xs text-gray-500 max-w-xs mt-1">
+                        Select an existing software tool from the list on the left to edit it, or click &ldquo;Add Software Tool&rdquo; to create a new one.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleCreateNewSoftware}
+                        className="mt-4 flex items-center gap-2 px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-full text-xs font-bold uppercase tracking-wider transition-all"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add Software Tool
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* TAB 4: MEDIA LIBRARY */}
           {activeTab === "media" && (
             <div className="space-y-6">
@@ -2974,6 +3574,253 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* TAB: CLIENT INBOX / ENQUIRIES */}
+          {activeTab === "enquiries" && (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                <div>
+                  <div className="flex items-center gap-2.5">
+                    <h2 className="text-xl font-bold">Client Inquiries & Leads</h2>
+                    {enquiries.filter((e) => e.status === "unread").length > 0 && (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-pink-500 text-white animate-pulse">
+                        {enquiries.filter((e) => e.status === "unread").length} Unread
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Manage enquiries received through the portfolio contact form.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={loadEnquiries}
+                    disabled={isEnquiriesLoading}
+                    className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-full text-xs font-semibold transition-all disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isEnquiriesLoading ? "animate-spin text-pink-400" : ""}`} />
+                    <span>Refresh</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Status Filters */}
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  { key: "all", label: "All", count: enquiries.length },
+                  {
+                    key: "unread",
+                    label: "Unread",
+                    count: enquiries.filter((e) => e.status === "unread").length,
+                  },
+                  {
+                    key: "read",
+                    label: "Read",
+                    count: enquiries.filter((e) => e.status === "read").length,
+                  },
+                  {
+                    key: "replied",
+                    label: "Replied",
+                    count: enquiries.filter((e) => e.status === "replied").length,
+                  },
+                  {
+                    key: "archived",
+                    label: "Archived",
+                    count: enquiries.filter((e) => e.status === "archived").length,
+                  },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() =>
+                      setEnquiryFilter(
+                        tab.key as "all" | "unread" | "read" | "replied" | "archived"
+                      )
+                    }
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                      enquiryFilter === tab.key
+                        ? "bg-pink-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.3)]"
+                        : "bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 border border-white/5"
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    <span className="ml-1.5 opacity-70 text-[10px]">({tab.count})</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Enquiry Cards List */}
+              {isEnquiriesLoading && enquiries.length === 0 ? (
+                <div className="py-20 text-center text-gray-400 space-y-3">
+                  <RefreshCw className="w-8 h-8 mx-auto animate-spin text-pink-500" />
+                  <p className="text-xs">Loading client enquiries...</p>
+                </div>
+              ) : enquiries.filter((e) =>
+                  enquiryFilter === "all" ? true : e.status === enquiryFilter
+                ).length === 0 ? (
+                <div className="py-20 text-center text-gray-500 border border-dashed border-white/10 rounded-2xl space-y-2">
+                  <Inbox className="w-10 h-10 mx-auto opacity-30 text-gray-400" />
+                  <p className="text-sm font-semibold text-gray-300">No enquiries found</p>
+                  <p className="text-xs max-w-sm mx-auto text-gray-500">
+                    When visitors submit the contact form on your portfolio, their details and messages will be stored here.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {enquiries
+                    .filter((e) =>
+                      enquiryFilter === "all" ? true : e.status === enquiryFilter
+                    )
+                    .map((item) => {
+                      const isUnread = item.status === "unread";
+                      const isReplied = item.status === "replied";
+                      const isArchived = item.status === "archived";
+
+                      return (
+                        <div
+                          key={item.id}
+                          className={`p-5 rounded-2xl border transition-all duration-200 ${
+                            isUnread
+                              ? "bg-pink-500/[0.03] border-pink-500/40 shadow-[0_0_25px_rgba(236,72,153,0.1)]"
+                              : "bg-white/[0.02] border-white/10 hover:border-white/20"
+                          }`}
+                        >
+                          {/* Top Row: Meta info */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                            <div className="flex flex-wrap items-center gap-2">
+                              {/* Status Badge */}
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                  isUnread
+                                    ? "bg-pink-500/20 text-pink-400 border border-pink-500/30"
+                                    : isReplied
+                                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                    : isArchived
+                                    ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                                    : "bg-white/10 text-gray-300 border border-white/10"
+                                }`}
+                              >
+                                {isUnread && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-ping" />
+                                )}
+                                {item.status}
+                              </span>
+
+                              {/* Category Badge */}
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                                {item.category}
+                              </span>
+
+                              {/* Timestamp */}
+                              <span className="text-[11px] text-gray-500 flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {new Date(item.createdAt).toLocaleString(undefined, {
+                                  dateStyle: "medium",
+                                  timeStyle: "short",
+                                })}
+                              </span>
+                            </div>
+
+                            {/* Status Quick Actions */}
+                            <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                              {item.status !== "read" && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleStatusChange(item.id, "read")}
+                                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-gray-300 hover:text-white transition-colors"
+                                  title="Mark as Read"
+                                >
+                                  Mark Read
+                                </button>
+                              )}
+                              {item.status !== "unread" && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleStatusChange(item.id, "unread")}
+                                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-gray-300 hover:text-white transition-colors"
+                                  title="Mark as Unread"
+                                >
+                                  Mark Unread
+                                </button>
+                              )}
+                              {item.status !== "replied" && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleStatusChange(item.id, "replied")}
+                                  className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[11px] font-medium transition-colors"
+                                  title="Mark as Replied"
+                                >
+                                  Mark Replied
+                                </button>
+                              )}
+                              {item.status !== "archived" && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleStatusChange(item.id, "archived")}
+                                  className="p-1 rounded-lg text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 transition-colors"
+                                  title="Archive enquiry"
+                                >
+                                  <Archive className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteEnquiryItem(item.id)}
+                                className="p-1 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                title="Delete enquiry"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Contact Info Row */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 p-3 rounded-xl bg-black/30 border border-white/5 mb-3 text-xs">
+                            <div className="flex items-center gap-2 text-white font-semibold">
+                              <User className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+                              <span className="truncate">{item.name}</span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <Mail className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                              <a
+                                href={`mailto:${item.email}?subject=${encodeURIComponent(
+                                  `Re: ${item.category} - Moon 3D Studio`
+                                )}`}
+                                className="text-gray-300 hover:text-cyan-400 hover:underline truncate"
+                              >
+                                {item.email}
+                              </a>
+                            </div>
+
+                            {item.phone && (
+                              <div className="flex items-center gap-2">
+                                <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                                <a
+                                  href={`tel:${item.phone}`}
+                                  className="text-gray-300 hover:text-emerald-400 hover:underline truncate"
+                                >
+                                  {item.phone}
+                                </a>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Message Body */}
+                          <div className="p-4 rounded-xl bg-black/40 border border-white/5">
+                            <p className="text-xs text-gray-200 leading-relaxed whitespace-pre-wrap select-text">
+                              {item.message}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
             </div>
           )}
         </main>

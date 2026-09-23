@@ -5,6 +5,14 @@ export interface SoftwareTool {
   icon: React.ReactNode;
 }
 
+export interface SoftwareToolItem {
+  id: string;
+  name: string;
+  icon: string;
+  category?: string;
+  invert?: boolean;
+}
+
 export interface Project {
   slug: string;
   title: string;
@@ -68,4 +76,17 @@ export interface ProductionItem {
   company: string;
   image: string;
 }
+
+export interface EnquiryItem {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  category: string;
+  message: string;
+  createdAt: string;
+  status: "unread" | "read" | "replied" | "archived";
+  ip?: string;
+}
+
 

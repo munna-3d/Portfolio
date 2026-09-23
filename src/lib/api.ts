@@ -5,11 +5,14 @@ import {
   ProfileContent,
   ExperienceItem,
   ProductionItem,
+  SoftwareToolItem,
+  EnquiryItem,
 } from "@/types";
 import { projects as defaultProjects } from "@/data/projects";
 import { vehicleCategories as defaultVehicleCategories } from "@/data/vehicle-categories";
 import { defaultProductions } from "@/data/productions";
 import { defaultExperiences } from "@/data/experiences";
+import { defaultSoftwareTools } from "@/data/software";
 
 export const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
@@ -48,6 +51,7 @@ export interface PortfolioData {
   vehicleCategories: VehicleCategory[];
   experiences: ExperienceItem[];
   productions: ProductionItem[];
+  softwareTools: SoftwareToolItem[];
 }
 
 export interface MediaItem {
@@ -182,6 +186,9 @@ export async function fetchContent(): Promise<PortfolioData> {
       productions: data.productions?.length
         ? data.productions
         : defaultProductions,
+      softwareTools: data.softwareTools?.length
+        ? data.softwareTools
+        : defaultSoftwareTools,
     };
   } catch {
     // Graceful offline fallback
@@ -192,6 +199,7 @@ export async function fetchContent(): Promise<PortfolioData> {
       vehicleCategories: defaultVehicleCategories,
       experiences: defaultExperiences,
       productions: defaultProductions,
+      softwareTools: defaultSoftwareTools,
     };
   }
 }
@@ -552,4 +560,140 @@ export async function deleteProduction(id: string) {
   if (!res.ok) throw new Error("Failed to delete production credit");
   return res.json();
 }
+
+/**
+ * Save Software Tool (Create or Update)
+ */
+export async function saveSoftwareTool(
+  tool: Partial<SoftwareToolItem>,
+  isNew: boolean = false
+): Promise<{ success: boolean; tool: SoftwareToolItem }> {
+  const url = isNew
+    ? `${BACKEND_URL}/api/software`
+    : `${BACKEND_URL}/api/software/${tool.id}`;
+  const method = isNew ? "POST" : "PUT";
+  const res = await fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(tool),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to save software tool");
+  }
+  return res.json();
+}
+
+/**
+ * Delete Software Tool
+ */
+export async function deleteSoftwareTool(id: string): Promise<{ success: boolean }> {
+  const res = await fetch(`${BACKEND_URL}/api/software/${id}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to delete software tool");
+  return res.json();
+}
+
+/**
+ * Reorder Software Tools
+ */
+export async function reorderSoftwareTools(
+  tools: SoftwareToolItem[]
+): Promise<{ success: boolean; softwareTools: SoftwareToolItem[] }> {
+  const res = await fetch(`${BACKEND_URL}/api/software-reorder`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ tools }),
+  });
+  if (!res.ok) throw new Error("Failed to reorder software tools");
+  return res.json();
+}
+
+// ---------------- ENQUIRIES / INBOX APIS ----------------
+
+/**
+ * Submit client enquiry from public contact form
+ */
+export async function submitEnquiry(payload: {
+  name: string;
+  email: string;
+  phone?: string;
+  category: string;
+  message: string;
+}): Promise<{ message: string; enquiry: EnquiryItem }> {
+  const res = await fetch(`${BACKEND_URL}/api/enquiries`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || "Failed to submit enquiry");
+  }
+  return data;
+}
+
+/**
+ * Fetch all enquiries (Admin protected)
+ */
+export async function fetchEnquiries(): Promise<EnquiryItem[]> {
+  const res = await fetch(`${BACKEND_URL}/api/enquiries`, {
+    headers: getAuthHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || "Failed to fetch enquiries");
+  }
+  return res.json();
+}
+
+/**
+ * Update enquiry status (Admin protected)
+ */
+export async function updateEnquiryStatus(
+  id: string,
+  status: "unread" | "read" | "replied" | "archived"
+): Promise<{ message: string; enquiry: EnquiryItem }> {
+  const res = await fetch(`${BACKEND_URL}/api/enquiries/${id}/status`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ status }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || "Failed to update enquiry status");
+  }
+  return data;
+}
+
+/**
+ * Delete enquiry (Admin protected)
+ */
+export async function deleteEnquiry(id: string): Promise<{ message: string }> {
+  const res = await fetch(`${BACKEND_URL}/api/enquiries/${id}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || "Failed to delete enquiry");
+  }
+  return data;
+}
+
+
 

@@ -2,7 +2,7 @@
   "admin": {
     "username": "admin",
     "email": "moon3d.xx@gmail.com",
-    "passwordHash": "$2b$10$IMX7fpSH/o0Z7.0TOX38ou5sBKntdSWr8XVN.5b5EnYIQJOjdLkD6"
+    "passwordHash": "$2b$10$6lWFZ3eob.PSfCQhnG6JeODbgvTgbEtWqA/LOhjXLb.RrV74bo8de"
   },
   "hero": {
     "name": "MUNNA AHMED",
@@ -227,29 +227,6 @@
       ]
     },
     {
-      "slug": "bikes",
-      "title": "Bikes",
-      "image": "/projects/bikes_hero.png",
-      "description": "Sleek two-wheeled electric superbikes with neon aesthetics.",
-      "about": "Compact design and intricate mechanical exposure. I focused on making every bolt and wire feel functional while maintaining a futuristic, high-end electric bike silhouette.",
-      "software": [
-        "Blender",
-        "Substance Painter",
-        "Photoshop"
-      ],
-      "deliverables": [
-        "High-Fidelity Superbike",
-        "Neon Glow Material Set",
-        "High Poly Scans",
-        "Promotional Renders"
-      ],
-      "gallery": [
-        "/projects/bikes_hero.png",
-        "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1200",
-        "https://images.unsplash.com/photo-1484176810451-05500d99c4aa?auto=format&fit=crop&q=80&w=1200"
-      ]
-    },
-    {
       "slug": "concept",
       "title": "Concept Vehicles",
       "image": "https://cdna.artstation.com/p/assets/images/images/078/513/008/large/moon-3d-1sd.jpg?1722326754",
@@ -271,6 +248,29 @@
         "https://cdna.artstation.com/p/assets/images/images/078/513/008/large/moon-3d-1sd.jpg?1722326754",
         "https://cdnb.artstation.com/p/assets/images/images/086/903/219/large/munna-moon3d-1x1.jpg?1744361374",
         "https://cdna.artstation.com/p/assets/images/images/085/340/522/large/moon-3d-7.jpg?1740564945"
+      ]
+    },
+    {
+      "slug": "bikes",
+      "title": "Bikes",
+      "image": "/projects/bikes_hero.png",
+      "description": "Sleek two-wheeled electric superbikes with neon aesthetics.",
+      "about": "Compact design and intricate mechanical exposure. I focused on making every bolt and wire feel functional while maintaining a futuristic, high-end electric bike silhouette.",
+      "software": [
+        "Blender",
+        "Substance Painter",
+        "Photoshop"
+      ],
+      "deliverables": [
+        "High-Fidelity Superbike",
+        "Neon Glow Material Set",
+        "High Poly Scans",
+        "Promotional Renders"
+      ],
+      "gallery": [
+        "/projects/bikes_hero.png",
+        "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1200",
+        "https://images.unsplash.com/photo-1484176810451-05500d99c4aa?auto=format&fit=crop&q=80&w=1200"
       ]
     }
   ],
@@ -374,6 +374,128 @@
       "role": "3D artist",
       "company": "Fabwelt Studios",
       "image": "https://cdnb.artstation.com/p/productions/covers/000/210/737/thumb/Option_2_%282%29.png?1748337237"
+    }
+  ],
+  "softwareTools": [
+    {
+      "id": "tool-1",
+      "name": "Blender",
+      "icon": "https://upload.wikimedia.org/wikipedia/commons/0/0c/Blender_logo_no_text.svg",
+      "category": "3D Modeling & Animation",
+      "invert": false
+    },
+    {
+      "id": "tool-2",
+      "name": "Substance 3D Painter",
+      "icon": "https://cdn.worldvectorlogo.com/logos/substance-3d-painter-1.svg",
+      "category": "Texturing & Shading",
+      "invert": false
+    },
+    {
+      "id": "tool-3",
+      "name": "Marmoset Toolbag",
+      "icon": "https://i.gyazo.com/83dced8f7fe0b22c1e3ff304f8bec747.png",
+      "category": "LookDev & Baking",
+      "invert": false
+    },
+    {
+      "id": "tool-4",
+      "name": "Photoshop",
+      "icon": "https://upload.wikimedia.org/wikipedia/commons/a/af/Adobe_Photoshop_CC_icon.svg",
+      "category": "Post-Processing & Textures",
+      "invert": false
+    },
+    {
+      "id": "tool-5",
+      "name": "Unity",
+      "icon": "https://cdn.worldvectorlogo.com/logos/unity-69.svg",
+      "category": "Real-Time Engine",
+      "invert": true
+    },
+    {
+      "id": "tool-6",
+      "name": "Unreal Engine",
+      "icon": "https://upload.wikimedia.org/wikipedia/commons/2/20/UE_Logo_Black_Centered.svg",
+      "category": "Real-Time Engine",
+      "invert": true
+    },
+    {
+      "id": "tool-7",
+      "name": "Maya",
+      "icon": "https://logosandtypes.com/wp-content/uploads/2025/03/maya.svg",
+      "category": "3D Modeling & Rigging",
+      "invert": false
+    },
+    {
+      "id": "tool-8",
+      "name": "ZBrush",
+      "icon": "https://www.svgrepo.com/show/508998/zbrush.svg",
+      "category": "Digital Sculpting",
+      "invert": true
+    },
+    {
+      "id": "tool-9",
+      "name": "3ds Max",
+      "icon": "https://cdn.worldvectorlogo.com/logos/autodesk-3ds-max.svg",
+      "category": "Hard-Surface Modeling",
+      "invert": false
+    }
+  ],
+  "enquiries": [
+    {
+      "id": "enq-1790167343488",
+      "name": "Attacker",
+      "email": "attacker@security-test.com",
+      "phone": "+1 555-0199",
+      "category": "Freelance Work",
+      "message": "Hello World!",
+      "status": "unread",
+      "ip": "127.0.0.1",
+      "createdAt": "2026-09-23T12:42:23.488Z"
+    },
+    {
+      "id": "enq-1790167329702",
+      "name": "QA Production Lead",
+      "email": "lead.qa@moon3dstudio.test",
+      "phone": "+91 9998887776",
+      "category": "Freelance Work",
+      "message": "E2E verification of Moon 3D Studio production inquiry pipeline.",
+      "status": "read",
+      "ip": "127.0.0.1",
+      "createdAt": "2026-09-23T12:42:09.702Z"
+    },
+    {
+      "id": "enq-1790166509640",
+      "name": "Attacker",
+      "email": "attacker@security-test.com",
+      "phone": "+1 555-0199",
+      "category": "Freelance Work",
+      "message": "Hello World!",
+      "status": "unread",
+      "ip": "::1",
+      "createdAt": "2026-09-23T12:28:29.640Z"
+    },
+    {
+      "id": "enq-1790165065183",
+      "name": "QA Production Lead",
+      "email": "lead.qa@moon3dstudio.test",
+      "phone": "+91 9998887776",
+      "category": "Freelance Work",
+      "message": "E2E verification of Moon 3D Studio production inquiry pipeline.",
+      "status": "read",
+      "ip": "::1",
+      "createdAt": "2026-09-23T12:04:25.183Z"
+    },
+    {
+      "id": "enq-1790164982873",
+      "name": "QA Production Lead",
+      "email": "lead.qa@moon3dstudio.test",
+      "phone": "+91 9998887776",
+      "category": "Freelance Work",
+      "message": "E2E verification of Moon 3D Studio production inquiry pipeline.",
+      "status": "unread",
+      "ip": "::1",
+      "createdAt": "2026-09-23T12:03:02.873Z"
     }
   ]
 }

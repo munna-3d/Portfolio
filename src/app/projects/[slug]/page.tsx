@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useLenis } from "lenis/react";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
 import { projects as fallbackProjects } from "@/data/projects";
 import { fetchProjectBySlug, formatImageUrl } from "@/lib/api";
 import { Project } from "@/types";
@@ -23,6 +23,15 @@ const ProjectPage = () => {
   const params = useParams();
   const slug = params?.slug as string;
   const initialProject = useMemo(() => fallbackProjects.find((p) => p.slug === slug) || null, [slug]);
+  const currentIndex = useMemo(() => fallbackProjects.findIndex((p) => p.slug === slug), [slug]);
+  const prevProject = useMemo(() => {
+    if (currentIndex <= 0) return fallbackProjects[fallbackProjects.length - 1];
+    return fallbackProjects[currentIndex - 1];
+  }, [currentIndex]);
+  const nextProject = useMemo(() => {
+    if (currentIndex === -1 || currentIndex >= fallbackProjects.length - 1) return fallbackProjects[0];
+    return fallbackProjects[currentIndex + 1];
+  }, [currentIndex]);
   const [project, setProject] = useState<Project | null>(initialProject);
   const [loading, setLoading] = useState(true);
   const lenis = useLenis();
@@ -169,6 +178,8 @@ const ProjectPage = () => {
                   <img 
                     src={img} 
                     alt={`${project.title} production ${index + 1}`}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out will-change-transform" 
                   />
                   
@@ -245,6 +256,49 @@ const ProjectPage = () => {
               </motion.div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 4. Project Navigation (Previous / Next) */}
+      <section className="max-w-[1800px] mx-auto px-6 lg:px-12 pb-24">
+        <div className="border-t border-white/10 pt-16 flex flex-col sm:flex-row items-center justify-between gap-6">
+          {prevProject && (
+            <Link
+              href={`/projects/${prevProject.slug}`}
+              className="w-full sm:w-1/2 p-6 rounded-3xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 hover:border-pink-500/30 transition-all duration-300 group flex items-center gap-5"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-pink-400 group-hover:bg-pink-500/10 transition-colors shrink-0">
+                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11px] font-bold uppercase tracking-widest text-gray-500 block mb-1">
+                  Previous Project
+                </span>
+                <p className="text-base font-bold text-white group-hover:text-pink-400 transition-colors truncate">
+                  {prevProject.title}
+                </p>
+              </div>
+            </Link>
+          )}
+
+          {nextProject && (
+            <Link
+              href={`/projects/${nextProject.slug}`}
+              className="w-full sm:w-1/2 p-6 rounded-3xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 hover:border-pink-500/30 transition-all duration-300 group flex items-center justify-between gap-5 text-right sm:ml-auto"
+            >
+              <div className="min-w-0 flex-1 text-left sm:text-right">
+                <span className="text-[11px] font-bold uppercase tracking-widest text-gray-500 block mb-1">
+                  Next Project
+                </span>
+                <p className="text-base font-bold text-white group-hover:text-pink-400 transition-colors truncate">
+                  {nextProject.title}
+                </p>
+              </div>
+              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-pink-400 group-hover:bg-pink-500/10 transition-colors shrink-0">
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+          )}
         </div>
       </section>
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, CheckCircle2, Loader2, XCircle } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
+import { submitEnquiry } from "@/lib/api";
 
 export default function ContactPage() {
     const [selectedCategory, setSelectedCategory] = useState("Freelance Work");
@@ -193,26 +194,44 @@ export default function ContactPage() {
         setStatusMessage("");
 
         try {
-            const formBody = new URLSearchParams();
-            formBody.append("entry.1930666528", selectedCategory);
-            formBody.append("entry.1976063434", formData.name);
-            formBody.append("entry.1043508791", formData.email);
-            if (formData.phone) {
-                formBody.append("entry.835817942", `${formData.countryCode} ${formData.phone}`);
+            // 1. Save enquiry to studio backend database
+            try {
+                await submitEnquiry({
+                    name: formData.name.trim(),
+                    email: formData.email.trim(),
+                    phone: formData.phone.trim() ? `${formData.countryCode} ${formData.phone.trim()}` : undefined,
+                    category: selectedCategory,
+                    message: formData.message.trim(),
+                });
+            } catch (dbErr) {
+                console.warn("Backend enquiry submission fallback:", dbErr);
             }
-            formBody.append("entry.1403723555", formData.message);
 
-            await fetch("https://docs.google.com/forms/d/e/1FAIpQLSdt1ZCqb3cKSeebIM85TTnkMGwIHTHm8TrnO7hFU2pVY4gONQ/formResponse", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: formBody.toString(),
-                mode: "no-cors"
-            });
+            // 2. Also forward to Google Forms for external alerts
+            try {
+                const formBody = new URLSearchParams();
+                formBody.append("entry.1930666528", selectedCategory);
+                formBody.append("entry.1976063434", formData.name);
+                formBody.append("entry.1043508791", formData.email);
+                if (formData.phone) {
+                    formBody.append("entry.835817942", `${formData.countryCode} ${formData.phone}`);
+                }
+                formBody.append("entry.1403723555", formData.message);
+
+                await fetch("https://docs.google.com/forms/d/e/1FAIpQLSdt1ZCqb3cKSeebIM85TTnkMGwIHTHm8TrnO7hFU2pVY4gONQ/formResponse", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: formBody.toString(),
+                    mode: "no-cors"
+                });
+            } catch (formErr) {
+                console.warn("Google Form post fallback:", formErr);
+            }
 
             setFormState("success");
-            setStatusMessage("Congrats! Your message has sent.");
+            setStatusMessage("Congrats! Your message has been sent.");
             setShowSuccessPopup(true);
             setFormData({ name: "", email: "", phone: "", countryCode: "+91", message: "" });
             
@@ -227,7 +246,7 @@ export default function ContactPage() {
         } catch (error) {
             console.error("Failed to send contact message:", error);
             setFormState("error");
-            setStatusMessage("Something went wrong");
+            setStatusMessage("Something went wrong. Please try again or email directly.");
             
             setTimeout(() => {
                 setFormState("idle");

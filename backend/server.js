@@ -18,21 +18,140 @@ const JWT_SECRET = process.env.JWT_SECRET || "portfolio_secure_jwt_secret_2026";
 
 // Directories
 const IS_VERCEL = Boolean(process.env.VERCEL);
-const DATA_DIR = IS_VERCEL ? "/tmp" : path.join(__dirname, "data");
+const DATA_DIR = IS_VERCEL
+  ? "/tmp"
+  : process.env.DATA_DIR || path.join(__dirname, "data");
 const DB_PATH = path.join(DATA_DIR, "db.json");
 const ORIGINAL_DB_PATH = path.join(__dirname, "data", "db.json");
-const UPLOAD_DIR = IS_VERCEL ? "/tmp/uploads" : path.join(__dirname, "uploads");
+const UPLOAD_DIR = IS_VERCEL
+  ? "/tmp/uploads"
+  : process.env.UPLOAD_DIR || path.join(__dirname, "uploads");
 
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
 if (!existsSync(UPLOAD_DIR)) mkdirSync(UPLOAD_DIR, { recursive: true });
 
-// Middleware
-app.use(cors({ origin: "*" }));
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+// --- Security: In-Memory Sliding-Window Rate Limiter ---
+function createRateLimiter({ windowMs, maxRequests, message }) {
+  const hits = new Map();
 
-// Serve static uploaded files
-app.use("/uploads", express.static(UPLOAD_DIR));
+  const cleanupTimer = setInterval(() => {
+    const now = Date.now();
+    for (const [key, record] of hits.entries()) {
+      if (now > record.resetTime) {
+        hits.delete(key);
+      }
+    }
+  }, 5 * 60 * 1000);
+  if (cleanupTimer.unref) cleanupTimer.unref();
+
+  return (req, res, next) => {
+    const ip =
+      req.headers["x-forwarded-for"]?.split(",")[0].trim() ||
+      req.socket.remoteAddress ||
+      "127.0.0.1";
+    const now = Date.now();
+    let record = hits.get(ip);
+
+    if (!record || now > record.resetTime) {
+      record = { count: 1, resetTime: now + windowMs };
+      hits.set(ip, record);
+      return next();
+    }
+
+    record.count++;
+    if (record.count > maxRequests) {
+      const retryAfterSec = Math.ceil((record.resetTime - now) / 1000);
+      res.setHeader("Retry-After", String(retryAfterSec));
+      return res.status(429).json({
+        error: message || "Too many requests. Please try again later.",
+        retryAfterSeconds: retryAfterSec,
+      });
+    }
+
+    next();
+  };
+}
+
+// Rate limiters for different sensitivity levels
+const authLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  maxRequests: 10,
+  message: "Too many authentication attempts from this IP. Please wait 15 minutes.",
+});
+
+const enquiryLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  maxRequests: 15,
+  message: "Too many contact enquiries sent from this IP. Please wait a few minutes.",
+});
+
+const apiLimiter = createRateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  maxRequests: 300,
+  message: "High traffic detected. Please slow down.",
+});
+
+// Sanitization Helper to prevent Stored XSS
+function sanitizeText(str) {
+  if (typeof str !== "string") return "";
+  return str
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/javascript:/gi, "")
+    .replace(/on\w+=/gi, "")
+    .trim();
+}
+
+// Configured CORS Origins
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://localhost:5000",
+  "http://127.0.0.1:5000",
+  process.env.NEXT_PUBLIC_SITE_URL,
+  process.env.ALLOWED_ORIGIN,
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. server-side Next.js fetch, mobile apps, curl)
+      if (!origin) return callback(null, true);
+      // In development or if origin matches configured domains / Vercel preview domains
+      if (
+        process.env.NODE_ENV !== "production" ||
+        allowedOrigins.some((allowed) => origin.startsWith(allowed)) ||
+        origin.endsWith(".vercel.app") ||
+        origin.includes("localhost") ||
+        origin.includes("127.0.0.1")
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error("CORS policy violation: Origin not allowed"));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  })
+);
+
+app.use(apiLimiter);
+app.use(express.json({ limit: "25mb" }));
+app.use(express.urlencoded({ extended: true, limit: "25mb" }));
+
+// Secure static file serving with sandboxing for SVGs
+app.use(
+  "/uploads",
+  express.static(UPLOAD_DIR, {
+    setHeaders: (res, filePath) => {
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      if (filePath.endsWith(".svg")) {
+        res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
+      }
+    },
+  })
+);
 
 // File Upload Configuration with Multer
 const ALLOWED_EXTENSIONS = new Set([
@@ -126,6 +245,8 @@ async function readDb() {
       vehicleCategories: [],
       experiences: [],
       productions: [],
+      softwareTools: [],
+      enquiries: [],
     };
   }
 }
@@ -153,7 +274,22 @@ function verifyAuthToken(req, res, next) {
   }
 }
 
-// ---------------- API ROUTES ----------------
+// Root Welcome Route
+app.get("/", (req, res) => {
+  res.json({
+    status: "online",
+    message: "Portfolio API Backend Server is running smoothly",
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: "/api/health",
+      content: "/api/content",
+      projects: "/api/projects",
+      vehicleCategories: "/api/vehicle-categories",
+      experiences: "/api/experiences",
+      productions: "/api/productions",
+    },
+  });
+});
 
 // Health check
 app.get("/api/health", (req, res) => {
@@ -163,34 +299,63 @@ app.get("/api/health", (req, res) => {
 // ---------------- AUTH ROUTES ----------------
 
 // Admin Login
-app.post("/api/auth/login", async (req, res) => {
+app.post("/api/auth/login", authLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) {
       return res.status(400).json({ error: "Username and password are required" });
     }
 
-    const db = await readDb();
-    const admin = db.admin;
+    const cleanUser = String(username).trim().toLowerCase();
+    const rawPass = String(password);
+    const cleanPass = String(password).trim();
 
-    const isMatchUser =
-      admin.username?.toLowerCase() === username.toLowerCase() ||
-      admin.email?.toLowerCase() === username.toLowerCase();
+    const db = await readDb();
+    const admin = db.admin || {};
+
+    const allowedUsernames = [
+      admin.username?.toLowerCase(),
+      admin.email?.toLowerCase(),
+      db.profile?.email?.toLowerCase(),
+      "admin",
+      "munna",
+      "moon3d",
+      "moon-3d",
+    ].filter(Boolean);
+
+    const isMatchUser = allowedUsernames.includes(cleanUser);
 
     if (!isMatchUser) {
+      console.warn(`[AUTH] Login failed: Unknown username/email "${cleanUser}"`);
       return res.status(401).json({ error: "Invalid username or password" });
     }
 
-    const isMatchPass = Boolean(
-      admin.passwordHash && bcrypt.compareSync(password, admin.passwordHash)
-    );
+    // Verify password strictly via bcrypt against stored passwordHash
+    let isMatchPass = false;
+    if (admin.passwordHash) {
+      isMatchPass = Boolean(
+        bcrypt.compareSync(rawPass, admin.passwordHash) ||
+        bcrypt.compareSync(cleanPass, admin.passwordHash)
+      );
+    } else {
+      // First-time seed fallback only if no hash was generated yet
+      isMatchPass = cleanPass === "admin123" || rawPass === "admin123";
+      if (isMatchPass) {
+        db.admin.passwordHash = bcrypt.hashSync("admin123", 10);
+        await writeDb(db);
+      }
+    }
+
     if (!isMatchPass) {
+      console.warn(`[AUTH] Login failed: Incorrect password for "${cleanUser}"`);
       return res.status(401).json({ error: "Invalid username or password" });
     }
+
+    console.log(`[AUTH] Login successful for "${cleanUser}"`);
 
     // Sign JWT token valid for 7 days
     const token = jwt.sign(
-      { username: admin.username, email: admin.email, role: "admin" },
+      { username: admin.username || "admin", email: admin.email || "moon3d.xx@gmail.com", role: "admin" },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -199,8 +364,8 @@ app.post("/api/auth/login", async (req, res) => {
       success: true,
       token,
       user: {
-        username: admin.username,
-        email: admin.email,
+        username: admin.username || "admin",
+        email: admin.email || "moon3d.xx@gmail.com",
       },
     });
   } catch (err) {
@@ -215,26 +380,34 @@ app.get("/api/auth/verify", verifyAuthToken, (req, res) => {
 });
 
 // Change Admin Password
-app.put("/api/auth/change-password", verifyAuthToken, async (req, res) => {
+app.put("/api/auth/change-password", verifyAuthToken, authLimiter, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ error: "Current and new passwords are required" });
     }
 
-    if (newPassword.length < 6) {
+    const cleanCurrent = String(currentPassword).trim();
+    const cleanNew = String(newPassword).trim();
+
+    if (cleanNew.length < 6) {
       return res.status(400).json({ error: "New password must be at least 6 characters" });
     }
 
     const db = await readDb();
-    const isMatch = bcrypt.compareSync(currentPassword, db.admin.passwordHash);
-    if (!isMatch) {
+    const isCurrentValid = Boolean(
+      (db.admin?.passwordHash && bcrypt.compareSync(String(currentPassword), db.admin.passwordHash)) ||
+      (db.admin?.passwordHash && bcrypt.compareSync(cleanCurrent, db.admin.passwordHash))
+    );
+
+    if (!isCurrentValid) {
       return res.status(401).json({ error: "Current password does not match" });
     }
 
-    db.admin.passwordHash = bcrypt.hashSync(newPassword, 10);
+    db.admin.passwordHash = bcrypt.hashSync(cleanNew, 10);
     await writeDb(db);
 
+    console.log("[AUTH] Admin password updated successfully");
     res.json({ success: true, message: "Password updated successfully" });
   } catch (err) {
     console.error("Password change error:", err);
@@ -281,10 +454,15 @@ app.get("/api/media", async (req, res) => {
 app.delete("/api/media/:filename", verifyAuthToken, async (req, res) => {
   try {
     const safeFilename = path.basename(req.params.filename);
-    const filePath = path.join(UPLOAD_DIR, safeFilename);
+    const resolvedPath = path.resolve(UPLOAD_DIR, safeFilename);
 
-    if (existsSync(filePath)) {
-      await fs.unlink(filePath);
+    // Prevent path traversal attack
+    if (!resolvedPath.startsWith(path.resolve(UPLOAD_DIR))) {
+      return res.status(403).json({ error: "Access denied. Invalid file path." });
+    }
+
+    if (existsSync(resolvedPath)) {
+      await fs.unlink(resolvedPath);
       res.json({ success: true, message: "File deleted" });
     } else {
       res.status(404).json({ error: "File not found" });
@@ -301,8 +479,8 @@ app.delete("/api/media/:filename", verifyAuthToken, async (req, res) => {
 app.get("/api/content", async (req, res) => {
   try {
     const db = await readDb();
-    // Exclude admin credentials from public content response
-    const { admin, ...publicData } = db;
+    // Exclude admin credentials and private enquiries from public content response
+    const { admin, enquiries, ...publicData } = db;
     res.json(publicData);
   } catch (error) {
     console.error("Error reading content:", error);
@@ -613,6 +791,194 @@ app.delete("/api/productions/:id", verifyAuthToken, async (req, res) => {
   }
 });
 
+// ---------------- SOFTWARE ARSENAL ROUTES ----------------
+
+// Get all software tools
+app.get("/api/software", async (req, res) => {
+  const db = await readDb();
+  res.json(db.softwareTools || []);
+});
+
+// Reorder software tools (Protected)
+app.put("/api/software-reorder", verifyAuthToken, async (req, res) => {
+  try {
+    const { tools, ids } = req.body;
+    const db = await readDb();
+
+    if (Array.isArray(tools) && tools.length > 0) {
+      db.softwareTools = tools;
+      await writeDb(db);
+      return res.json({ success: true, softwareTools: db.softwareTools });
+    }
+
+    if (Array.isArray(ids) && ids.length > 0) {
+      const currentMap = new Map((db.softwareTools || []).map((t) => [t.id, t]));
+      const newOrdered = [];
+      for (const id of ids) {
+        if (currentMap.has(id)) {
+          newOrdered.push(currentMap.get(id));
+          currentMap.delete(id);
+        }
+      }
+      for (const remaining of currentMap.values()) {
+        newOrdered.push(remaining);
+      }
+      db.softwareTools = newOrdered;
+      await writeDb(db);
+      return res.json({ success: true, softwareTools: db.softwareTools });
+    }
+
+    res.status(400).json({ error: "Invalid data. Expected tools or ids array." });
+  } catch (err) {
+    console.error("Error reordering software tools:", err);
+    res.status(500).json({ error: "Failed to reorder software tools" });
+  }
+});
+
+// Create new software tool (Protected)
+app.post("/api/software", verifyAuthToken, async (req, res) => {
+  try {
+    const db = await readDb();
+    const { name, icon, category, invert } = req.body;
+    if (!name) {
+      return res.status(400).json({ error: "Software name is required" });
+    }
+    const newTool = {
+      id: req.body.id || `tool-${Date.now()}`,
+      name: name.trim(),
+      icon: (icon || "").trim(),
+      category: (category || "").trim(),
+      invert: Boolean(invert),
+    };
+    db.softwareTools = [...(db.softwareTools || []), newTool];
+    await writeDb(db);
+    res.status(201).json({ success: true, tool: newTool });
+  } catch (err) {
+    console.error("Error creating software tool:", err);
+    res.status(500).json({ error: "Failed to create software tool" });
+  }
+});
+
+// Update software tool (Protected)
+app.put("/api/software/:id", verifyAuthToken, async (req, res) => {
+  try {
+    const db = await readDb();
+    const index = (db.softwareTools || []).findIndex((t) => t.id === req.params.id);
+    if (index === -1) return res.status(404).json({ error: "Software tool not found" });
+
+    db.softwareTools[index] = {
+      ...db.softwareTools[index],
+      ...req.body,
+      id: req.params.id, // Preserve ID
+    };
+    await writeDb(db);
+    res.json({ success: true, tool: db.softwareTools[index] });
+  } catch (err) {
+    console.error("Error updating software tool:", err);
+    res.status(500).json({ error: "Failed to update software tool" });
+  }
+});
+
+// Delete software tool (Protected)
+app.delete("/api/software/:id", verifyAuthToken, async (req, res) => {
+  try {
+    const db = await readDb();
+    db.softwareTools = (db.softwareTools || []).filter((t) => t.id !== req.params.id);
+    await writeDb(db);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error deleting software tool:", err);
+    res.status(500).json({ error: "Failed to delete software tool" });
+  }
+});
+
+// ---------------- ENQUIRIES / CONTACT ROUTES ----------------
+
+// Submit new enquiry (Public)
+app.post("/api/enquiries", enquiryLimiter, async (req, res) => {
+  try {
+    const { name, email, phone, category, message } = req.body;
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: "Name, email, and message are required." });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(String(email).trim())) {
+      return res.status(400).json({ error: "Please provide a valid email address." });
+    }
+
+    const cleanEnquiry = {
+      id: `enq-${Date.now()}`,
+      name: sanitizeText(name).slice(0, 100),
+      email: String(email).trim().toLowerCase().slice(0, 150),
+      phone: sanitizeText(phone || "").slice(0, 50),
+      category: sanitizeText(category || "General Inquiry").slice(0, 80),
+      message: sanitizeText(message).slice(0, 3000),
+      status: "unread",
+      ip: req.ip || req.headers["x-forwarded-for"] || "127.0.0.1",
+      createdAt: new Date().toISOString(),
+    };
+
+    const db = await readDb();
+    db.enquiries = [cleanEnquiry, ...(db.enquiries || [])];
+    await writeDb(db);
+
+    console.log(`[ENQUIRY] New contact enquiry from ${cleanEnquiry.name} (${cleanEnquiry.email})`);
+    res.status(201).json({ success: true, message: "Enquiry submitted successfully", id: cleanEnquiry.id, enquiry: cleanEnquiry });
+  } catch (err) {
+    console.error("Error saving enquiry:", err);
+    res.status(500).json({ error: "Failed to submit enquiry" });
+  }
+});
+
+// Get all enquiries (Protected)
+app.get("/api/enquiries", verifyAuthToken, async (req, res) => {
+  try {
+    const db = await readDb();
+    res.json(db.enquiries || []);
+  } catch (err) {
+    console.error("Error fetching enquiries:", err);
+    res.status(500).json({ error: "Failed to fetch enquiries" });
+  }
+});
+
+// Update enquiry status (Protected)
+app.patch("/api/enquiries/:id/status", verifyAuthToken, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const allowed = ["unread", "read", "replied", "archived"];
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ error: "Invalid status value" });
+    }
+
+    const db = await readDb();
+    const enquiry = (db.enquiries || []).find((e) => e.id === req.params.id);
+    if (!enquiry) {
+      return res.status(404).json({ error: "Enquiry not found" });
+    }
+
+    enquiry.status = status;
+    await writeDb(db);
+    res.json({ success: true, enquiry });
+  } catch (err) {
+    console.error("Error updating enquiry status:", err);
+    res.status(500).json({ error: "Failed to update enquiry status" });
+  }
+});
+
+// Delete enquiry (Protected)
+app.delete("/api/enquiries/:id", verifyAuthToken, async (req, res) => {
+  try {
+    const db = await readDb();
+    db.enquiries = (db.enquiries || []).filter((e) => e.id !== req.params.id);
+    await writeDb(db);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error deleting enquiry:", err);
+    res.status(500).json({ error: "Failed to delete enquiry" });
+  }
+});
+
 // Centralized Error Handling Middleware
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
@@ -626,10 +992,11 @@ app.use((err, req, res, next) => {
 
 // Start Server
 if (!IS_VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`Portfolio Backend running on http://localhost:${PORT}`);
-    console.log(`API Base: http://localhost:${PORT}/api`);
-    console.log(`Uploads available at: http://localhost:${PORT}/uploads`);
+  const HOST = process.env.HOST || "0.0.0.0";
+  app.listen(PORT, HOST, () => {
+    console.log(`Portfolio Backend running on http://${HOST}:${PORT}`);
+    console.log(`API Base: http://${HOST}:${PORT}/api`);
+    console.log(`Uploads available at: http://${HOST}:${PORT}/uploads`);
   });
 }
 

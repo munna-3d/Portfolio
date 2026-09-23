@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "build": "node -e \"console.log('Backend ready for deployment')\""
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

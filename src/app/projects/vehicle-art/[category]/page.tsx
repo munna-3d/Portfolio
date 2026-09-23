@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useLenis } from "lenis/react";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
 import { vehicleCategories as defaultVehicleCategories } from "@/data/vehicle-categories";
 import { fetchVehicleCategoryBySlug, formatImageUrl } from "@/lib/api";
 import { VehicleCategory } from "@/types";
@@ -23,6 +23,15 @@ const CategoryDetailPage = () => {
   const params = useParams();
   const categorySlug = params?.category as string;
   const initialCategory = useMemo(() => defaultVehicleCategories.find((c) => c.slug === categorySlug) || null, [categorySlug]);
+  const currentIndex = useMemo(() => defaultVehicleCategories.findIndex((c) => c.slug === categorySlug), [categorySlug]);
+  const prevCategory = useMemo(() => {
+    if (currentIndex <= 0) return defaultVehicleCategories[defaultVehicleCategories.length - 1];
+    return defaultVehicleCategories[currentIndex - 1];
+  }, [currentIndex]);
+  const nextCategory = useMemo(() => {
+    if (currentIndex === -1 || currentIndex >= defaultVehicleCategories.length - 1) return defaultVehicleCategories[0];
+    return defaultVehicleCategories[currentIndex + 1];
+  }, [currentIndex]);
   const [category, setCategory] = useState<VehicleCategory | null>(initialCategory);
   const [loading, setLoading] = useState(true);
   const lenis = useLenis();
@@ -167,6 +176,8 @@ const CategoryDetailPage = () => {
                   <img 
                     src={img} 
                     alt={`${category.title} production ${index + 1}`}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out will-change-[transform,opacity]" 
                   />
                   
@@ -243,6 +254,49 @@ const CategoryDetailPage = () => {
               </motion.div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 4. Category Navigation (Previous / Next) */}
+      <section className="max-w-[1800px] mx-auto px-6 lg:px-12 pb-24">
+        <div className="border-t border-white/10 pt-16 flex flex-col sm:flex-row items-center justify-between gap-6">
+          {prevCategory && (
+            <Link
+              href={`/projects/vehicle-art/${prevCategory.slug}`}
+              className="w-full sm:w-1/2 p-6 rounded-3xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 hover:border-pink-500/30 transition-all duration-300 group flex items-center gap-5"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-pink-400 group-hover:bg-pink-500/10 transition-colors shrink-0">
+                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11px] font-bold uppercase tracking-widest text-gray-500 block mb-1">
+                  Previous Category
+                </span>
+                <p className="text-base font-bold text-white group-hover:text-pink-400 transition-colors truncate">
+                  {prevCategory.title}
+                </p>
+              </div>
+            </Link>
+          )}
+
+          {nextCategory && (
+            <Link
+              href={`/projects/vehicle-art/${nextCategory.slug}`}
+              className="w-full sm:w-1/2 p-6 rounded-3xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 hover:border-pink-500/30 transition-all duration-300 group flex items-center justify-between gap-5 text-right sm:ml-auto"
+            >
+              <div className="min-w-0 flex-1 text-left sm:text-right">
+                <span className="text-[11px] font-bold uppercase tracking-widest text-gray-500 block mb-1">
+                  Next Category
+                </span>
+                <p className="text-base font-bold text-white group-hover:text-pink-400 transition-colors truncate">
+                  {nextCategory.title}
+                </p>
+              </div>
+              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-pink-400 group-hover:bg-pink-500/10 transition-colors shrink-0">
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+          )}
         </div>
       </section>
 

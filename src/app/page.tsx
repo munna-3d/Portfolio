@@ -21,8 +21,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { softwareTools } from "@/data/software";
-import { fetchContent, PortfolioData, defaultHero, defaultProfile } from "@/lib/api";
+import { defaultSoftwareTools } from "@/data/software";
+import { fetchContent, PortfolioData, defaultHero, defaultProfile, formatImageUrl } from "@/lib/api";
 
 const expertise = [
   { name: "Hard-Surface Modeling", icon: <Box className="w-5 h-5" /> },
@@ -59,6 +59,7 @@ export default function Home() {
   const hero = content?.hero || defaultHero;
   const profile = content?.profile || defaultProfile;
   const projectsList = content?.projects;
+  const toolsList = content?.softwareTools?.length ? content.softwareTools : defaultSoftwareTools;
 
   // Hardcoded images for Hard-Surface Modeling popup showcase
   const hardSurfaceImages = [
@@ -192,9 +193,9 @@ export default function Home() {
               <h2 className="text-3xl font-bold text-white tracking-tight">Software Arsenal</h2>
             </motion.div>
             <div className="flex flex-wrap gap-4">
-              {softwareTools.map((tool) => (
+              {toolsList.map((tool) => (
                 <motion.div
-                  key={tool.name}
+                  key={tool.id || tool.name}
                   variants={fadeInUp}
                   className="group relative flex items-center gap-3 px-6 py-4 rounded-full overflow-hidden transition-transform transition-colors duration-150 hover:-translate-y-1 will-change-[transform,opacity] transform-gpu"
                   style={{ transform: 'translateZ(0)' }}
@@ -204,8 +205,21 @@ export default function Home() {
                   <div className="absolute inset-[1px] rounded-full bg-[#1a1a1a]/95 border border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),inset_0_-1px_0_0_rgba(0,0,0,0.3)] transition-colors transition-border-color duration-150 group-hover:bg-[#1a1a1a]/85 group-hover:border-white/20" />
                   <div className="absolute inset-x-4 top-[1px] h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative z-10 flex items-center gap-3">
-                    <div className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
-                      {tool.icon}
+                    <div className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] flex items-center justify-center w-6 h-6">
+                      {tool.icon ? (
+                        <img
+                          src={formatImageUrl(tool.icon)}
+                          alt={tool.name}
+                          className={`w-6 h-6 object-contain ${tool.invert ? "invert" : ""}`}
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <div className="w-5 h-5 rounded-full bg-pink-500/30 text-pink-400 font-bold text-xs flex items-center justify-center">
+                          {tool.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
                     </div>
                     <span className="text-gray-200 font-semibold tracking-wide group-hover:text-white transition-colors duration-150 text-shadow-sm">{tool.name}</span>
                   </div>

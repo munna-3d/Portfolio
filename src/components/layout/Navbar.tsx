@@ -26,6 +26,16 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mobileMenuOpen]);
+
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Experience", href: "/#experience" },
@@ -54,11 +64,11 @@ export default function Navbar() {
       >
         <div className="flex-1 pointer-events-auto">
           {pathname !== '/' && (
-            <Link href="/" className="flex items-center gap-2.5 group w-fit">
+            <Link href="/" className="flex items-center gap-2.5 group w-fit" aria-label="Moon 3D Studio Homepage">
               <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/10 group-hover:border-pink-500/50 group-hover:scale-110 transition-transform transition-colors duration-500 shadow-[0_0_15px_rgba(236,72,153,0.3)] will-change-transform">
                 <img 
                   src="/images/logo.png" 
-                  alt="Logo" 
+                  alt="Munna Ahmed - Moon 3D Studio Official Logo" 
                   className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-transform transition-opacity duration-500" 
                 />
               </div>
@@ -89,8 +99,11 @@ export default function Navbar() {
         <div className="flex-1 flex justify-end pointer-events-auto items-center gap-6">
           {/* Mobile Menu Toggle */}
           <button 
-            className={`md:hidden p-2 text-white bg-black/50 border border-white/10 rounded-full ${isDetailSection ? '' : 'backdrop-blur-md'}`}
+            type="button"
+            className={`md:hidden p-2 text-white bg-black/50 border border-white/10 rounded-full ${isDetailSection ? '' : 'backdrop-blur-md'} focus:outline-none focus:ring-2 focus:ring-pink-500`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
