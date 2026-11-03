@@ -7,8 +7,8 @@ import { motion } from "framer-motion";
 import { useLenis } from "lenis/react";
 import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
 import { projects as fallbackProjects } from "@/data/projects";
-import { fetchProjectBySlug, formatImageUrl } from "@/lib/api";
-import { Project } from "@/types";
+import { fetchProjectBySlug, fetchSoftwareTools, formatImageUrl } from "@/lib/api";
+import { Project, SoftwareToolItem } from "@/types";
 import { getSoftwareByName } from "@/data/software";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
@@ -33,9 +33,20 @@ const ProjectPage = () => {
     return fallbackProjects[currentIndex + 1];
   }, [currentIndex]);
   const [project, setProject] = useState<Project | null>(initialProject);
+  const [softwareTools, setSoftwareTools] = useState<SoftwareToolItem[]>([]);
   const [loading, setLoading] = useState(true);
   const lenis = useLenis();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchSoftwareTools().then((tools) => {
+      if (isMounted && tools) setSoftwareTools(tools);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -230,7 +241,7 @@ const ProjectPage = () => {
                 <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-500 mb-8 border-b border-white/5 pb-4">Software Used</h2>
                 <div className="flex flex-wrap gap-4">
                   {(project.tech || []).map((techName) => {
-                    const tool = getSoftwareByName(techName);
+                    const tool = getSoftwareByName(techName, softwareTools);
                     return (
                       <div key={techName} className="flex items-center gap-3 px-5 py-3 rounded-2xl border border-white/10 bg-white/5 hover:border-pink-500/30 transition-colors duration-300">
                         <div className="w-5 h-5 flex items-center justify-center">{tool.icon}</div>

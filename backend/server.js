@@ -13,6 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || "portfolio_secure_jwt_secret_2026";
 
@@ -45,10 +46,7 @@ function createRateLimiter({ windowMs, maxRequests, message }) {
   if (cleanupTimer.unref) cleanupTimer.unref();
 
   return (req, res, next) => {
-    const ip =
-      req.headers["x-forwarded-for"]?.split(",")[0].trim() ||
-      req.socket.remoteAddress ||
-      "127.0.0.1";
+    const ip = req.ip || req.socket.remoteAddress || "127.0.0.1";
     const now = Date.now();
     let record = hits.get(ip);
 
@@ -104,27 +102,27 @@ function sanitizeText(str) {
 }
 
 // Configured CORS Origins
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  "http://localhost:5000",
-  "http://127.0.0.1:5000",
-  process.env.NEXT_PUBLIC_SITE_URL,
-  process.env.ALLOWED_ORIGIN,
-].filter(Boolean);
+const allowedOrigins = new Set(
+  [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, ""),
+    process.env.ALLOWED_ORIGIN?.replace(/\/$/, ""),
+  ].filter(Boolean)
+);
 
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (e.g. server-side Next.js fetch, mobile apps, curl)
       if (!origin) return callback(null, true);
-      // In development or if origin matches configured domains / Vercel preview domains
+      const cleanOrigin = origin.replace(/\/$/, "");
+      // In development or if origin exactly matches configured whitelist
       if (
         process.env.NODE_ENV !== "production" ||
-        allowedOrigins.some((allowed) => origin.startsWith(allowed)) ||
-        origin.endsWith(".vercel.app") ||
-        origin.includes("localhost") ||
-        origin.includes("127.0.0.1")
+        allowedOrigins.has(cleanOrigin)
       ) {
         return callback(null, true);
       }
@@ -193,7 +191,7 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max file size
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    if (ALLOWED_EXTENSIONS.has(ext) || ALLOWED_MIME_TYPES.has(file.mimetype)) {
+    if (ALLOWED_EXTENSIONS.has(ext) && ALLOWED_MIME_TYPES.has(file.mimetype)) {
       cb(null, true);
     } else {
       cb(new Error("Invalid file type. Only image files (JPG, PNG, WEBP, GIF, SVG, AVIF) are allowed."), false);
@@ -251,10 +249,23 @@ async function readDb() {
   }
 }
 
+let writeQueue = Promise.resolve();
+
 async function writeDb(data) {
-  const tempPath = `${DB_PATH}.tmp`;
-  await fs.writeFile(tempPath, JSON.stringify(data, null, 2), "utf-8");
-  await fs.rename(tempPath, DB_PATH);
+  writeQueue = writeQueue.then(async () => {
+    const tempPath = `${DB_PATH}.tmp`;
+    await fs.writeFile(tempPath, JSON.stringify(data, null, 2), "utf-8");
+    try {
+      await fs.rename(tempPath, DB_PATH);
+    } catch {
+      // Robust fallback on Windows if rename fails due to transient file lock
+      await fs.copyFile(tempPath, DB_PATH);
+      await fs.unlink(tempPath).catch(() => {});
+    }
+  }).catch((err) => {
+    console.error("Database write queue error:", err);
+  });
+  return writeQueue;
 }
 
 // Auth Helper Middleware
@@ -269,7 +280,7 @@ function verifyAuthToken(req, res, next) {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch {
     return res.status(401).json({ error: "Unauthorized. Invalid or expired token." });
   }
 }
@@ -317,10 +328,6 @@ app.post("/api/auth/login", authLimiter, async (req, res) => {
       admin.username?.toLowerCase(),
       admin.email?.toLowerCase(),
       db.profile?.email?.toLowerCase(),
-      "admin",
-      "munna",
-      "moon3d",
-      "moon-3d",
     ].filter(Boolean);
 
     const isMatchUser = allowedUsernames.includes(cleanUser);
@@ -480,7 +487,9 @@ app.get("/api/content", async (req, res) => {
   try {
     const db = await readDb();
     // Exclude admin credentials and private enquiries from public content response
-    const { admin, enquiries, ...publicData } = db;
+    const publicData = { ...db };
+    delete publicData.admin;
+    delete publicData.enquiries;
     res.json(publicData);
   } catch (error) {
     console.error("Error reading content:", error);

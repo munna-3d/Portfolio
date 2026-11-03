@@ -72,9 +72,12 @@ export default function ScrollyCanvas({ hero }: ScrollyCanvasProps) {
     const updateCanvasDimensions = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-        if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+        const dpr = Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 2);
+        const targetW = Math.floor(window.innerWidth * dpr);
+        const targetH = Math.floor(window.innerHeight * dpr);
+        if (canvas.width !== targetW || canvas.height !== targetH) {
+            canvas.width = targetW;
+            canvas.height = targetH;
         }
     }, []);
 
@@ -89,8 +92,9 @@ export default function ScrollyCanvas({ hero }: ScrollyCanvasProps) {
 
         // Ensure canvas dimensions are initialized without re-measuring window every frame
         if (canvas.width === 0 || canvas.height === 0) {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            const dpr = Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 2);
+            canvas.width = Math.floor(window.innerWidth * dpr);
+            canvas.height = Math.floor(window.innerHeight * dpr);
         }
 
         // Calculate "object-fit: cover"

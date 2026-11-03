@@ -73,14 +73,11 @@ import {
   ArrowUpDown,
   Cpu,
   Mail,
-  MessageSquare,
   Inbox,
-  Eye,
   Archive,
   Phone,
   User,
   Clock,
-  CheckCheck,
 } from "lucide-react";
 
 const getErrorMessage = (err: unknown): string => {

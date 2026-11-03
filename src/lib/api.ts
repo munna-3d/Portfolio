@@ -617,6 +617,22 @@ export async function reorderSoftwareTools(
   return res.json();
 }
 
+/**
+ * Fetch All Software Tools
+ */
+export async function fetchSoftwareTools(): Promise<SoftwareToolItem[]> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/software`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return defaultSoftwareTools;
+    const data = await res.json();
+    return Array.isArray(data) && data.length > 0 ? data : defaultSoftwareTools;
+  } catch {
+    return defaultSoftwareTools;
+  }
+}
+
 // ---------------- ENQUIRIES / INBOX APIS ----------------
 
 /**
